@@ -5,15 +5,15 @@
     "url": "http://oscar.pm"
   },
   "description": "A JavaScript library.",
-  "files": ["dist/seht.js"],
+  "files": ["src/seht.js"],
   "homepage": "http://git.io/seht",
   "keywords": ["dom", "events", "selector"],
   "license": "MIT",
-  "main": "dist/seht.js",
+  "main": "src/seht.js",
   "name": "seht",
   "repository": {
     "type": "git",
     "url": "https://github.com/oscarpalmer/seht.git"
   },
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
