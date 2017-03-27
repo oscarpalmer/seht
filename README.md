@@ -1,5 +1,7 @@
 # Seht
 
+[![npm version](https://badge.fury.io/js/seht.svg)](https://badge.fury.io/js/seht)
+
 A JavaScript library, and a decent – hopefully – replacement for jQuery, et alia.
 
 ## The name
@@ -8,7 +10,7 @@ A JavaScript library, and a decent – hopefully – replacement for jQuery, et 
 >
 > &lsquo;It cannot be fixed now&rsquo;, said the sorcerer quietly.
 
-&mdash; Carlovac Townway, Book Twelve of _[2920, The Last Year of the First Era](http://en.uesp.net/wiki/Lore:2920,_Evening_Star_(v12))_
+&mdash; Carlovac Townway, Book Twelve of _[2920, The Last Year of the First Era](http://en.uesp.net/wiki/Lore:2920,_Evening_Star_%28v12%29)_
 
 ## License
 

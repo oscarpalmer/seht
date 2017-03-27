@@ -1,0 +1,19 @@
+{
+  "author": {
+    "email": "opalmer@me.com",
+    "name": "Oscar Palmér",
+    "url": "http://oscar.pm"
+  },
+  "description": "A JavaScript library.",
+  "files": ["dist/seht.js"],
+  "homepage": "http://git.io/seht",
+  "keywords": ["dom", "events", "selector"],
+  "license": "MIT",
+  "main": "dist/seht.js",
+  "name": "seht",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oscarpalmer/seht.git"
+  },
+  "version": "0.1.0"
+}
