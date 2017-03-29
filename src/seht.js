@@ -17,8 +17,10 @@
   arrayProto = Array.prototype,
   Regex = {
     HTML: /^\s*<([^\s>]+)/,
-    ID: /^\#[\w\-]+$/
+    ID: /^\#[\w\-]+$/,
+    Ready: /(complete|interactive|loaded)/
   },
+  Events,
   Seht;
 
   //
@@ -113,6 +115,22 @@
 
   //
 
+  Events = {
+    ready: function (handler) {
+      if (Regex.Ready.test(doc.readyState)) {
+        // Old-school ready-event
+
+        handler.call(doc);
+      } else {
+        // Modern ready-event
+
+        doc.addEventListener('DOMContentLoaded', handler);
+      }
+    }
+  };
+
+  //
+
   /**
    * Function to call Sehts constructor.
    *
@@ -154,6 +172,7 @@
   //
 
   seht.each = each;
+  seht.ready = Events.ready;
 
   //
 
