@@ -136,11 +136,11 @@
    *
    * @param {*} selector - Query to search for
    * @param {Element=} context - Item in which we look for 'selector'
-   * @return {Seht} An old or new Seht-object
+   * @return {Seht} An old or new Seht object
    */
   function seht(selector, context) {
     if (selector instanceof Seht) {
-      // The selector is a Seht-object, so let's return it as-is
+      // The selector is a Seht object, so let's return it as-is
 
       return selector;
     }
@@ -150,7 +150,7 @@
   }
 
   /**
-   * Initiates a Seht-object.
+   * Initiates a Seht object.
    *
    * @constructor
    * @param {*} selector - Query to search for
@@ -163,10 +163,34 @@
     // Find elements
     elements = find(selector, context);
 
+    // Set length for the current object
+    this.length = elements.length;
+
     // Add each element to the current object
-    each(elements, function (node, index) {
-      this[index] = node;
+    each(elements, function (element, index) {
+      this[index] = element;
     }, this);
+  };
+
+  /**
+   * Prototypal methods or properties for Seht.
+   */
+  Seht.prototype = {
+
+    /**
+     * Default length for a Seht object.
+     */
+    length: null,
+
+    /**
+     * Call a handler for each element in the Seht object.
+     *
+     * @param {Function} handler
+     * @return {Seht} The original object
+     */
+    each: function (handler) {
+      return each(this, handler);
+    },
   };
 
   //
