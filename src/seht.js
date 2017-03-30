@@ -20,10 +20,13 @@
     ID: /^\#[\w\-]+$/,
     Ready: /(complete|interactive|loaded)/
   },
+  Classes,
   Events,
   Seht;
 
-  //
+  /**
+   * Functions.
+   */
 
   /**
    * Call a handler for each item in an array or object.
@@ -113,9 +116,111 @@
     return context.querySelectorAll(selector);
   }
 
-  //
+  /**
+   * Trim and clean a string.
+   */
+  function trim(string) {
+    return string.trim().replace(/\s+/g, ' ');
+  }
 
+  /**
+   * Objects.
+   */
+
+  /**
+   * Object for handling element classes.
+   */
+  Classes = {
+
+    /**
+     * Add class names to an element.
+     *
+     * @this {Array} Array of class names
+     * @param {Element} element - Element to modify
+     */
+    add: function (element) {
+      each(this, function (name) {
+        if (Classes.contains(element, name) === false) {
+          Classes.addClass(element, name);
+        }
+      });
+
+      element.className = trim(element.className);
+    },
+
+    /**
+     * Add a single class name to an element.
+     */
+    addClass: function (element, name) {
+      element.className += ' ' + name;
+    },
+
+    /**
+     * Verify if an element has a specific class name.
+     */
+    contains: function (element, string) {
+      return Classes.regExp(string).test(element.className);
+    },
+
+    /**
+     * Create the regular expression for a class name.
+     */
+    regExp: function (string) {
+      return new RegExp('(^|\\s+)' + string + '(\\s+|$)');
+    },
+
+    /**
+     * Remove class names from an element.
+     *
+     * @this {Array} Array of class names
+     * @param {Element} element - Element to modify
+     */
+    remove: function (element, names) {
+      each(this, function (name) {
+        if (Classes.contains(element, name)) {
+          Classes.removeClass(element, name);
+        }
+      });
+
+      element.className = trim(element.className);
+    },
+
+    /**
+     * Remove a single class name from an element.
+     */
+    removeClass: function (element, name) {
+      element.className = element.className.replace(Classes.regExp(name), '');
+    },
+
+    /**
+     * Toggle classes for an element.
+     *
+     * @this {Array} Array of class names
+     * @param {Element} element - Element to modify
+     */
+    toggle: function (element) {
+      each(this, function (name) {
+        if (Classes.contains(element, name)) {
+          Classes.removeClass(element, name);
+        } else {
+          Classes.addClass(element, name);
+        }
+      });
+
+      element.className = trim(element.className);
+    }
+  };
+
+  /**
+   * Object for handling events.
+   */
   Events = {
+
+    /**
+     * Event handler for when the document is ready.
+     *
+     * @param {Function} handler - Handler to call when ready
+     */
     ready: function (handler) {
       if (Regex.Ready.test(doc.readyState)) {
         // Old-school ready-event
@@ -129,7 +234,9 @@
     }
   };
 
-  //
+  /**
+   * Seht.
+   */
 
   /**
    * Function to call Sehts constructor.
@@ -183,6 +290,16 @@
     length: null,
 
     /**
+     * Add class names to elements.
+     *
+     * @param {...String} Class names
+     * @return {Seht} The original object
+     */
+    addClass: function() {
+      return each(this, Classes.add, arguments);
+    },
+
+    /**
      * Call a handler for each element in the Seht object.
      *
      * @param {Function} handler
@@ -191,14 +308,40 @@
     each: function (handler) {
       return each(this, handler);
     },
-  };
 
-  //
+    /**
+     * Verify if an element has a specific class name.
+     *
+     * @param {String} string - Class name to verify
+     * @return {Boolean}
+     */
+    hasClass: function (string) {
+      return Classes.contains(this[0], string);
+    },
+
+    /**
+     * Remove class names from elements.
+     *
+     * @param {...String} Class names
+     * @return {Seht} The original object
+     */
+    removeClass: function () {
+      return each(this, Classes.remove, arguments);
+    },
+
+    /**
+     * Toggle class names for elements.
+     *
+     * @param {...String} Class names
+     * @return {Seht} The original object
+     */
+    toggleClass: function () {
+      return each(this, Classes.toggle, arguments);
+    }
+  };
 
   seht.each = each;
   seht.ready = Events.ready;
-
-  //
 
   return seht;
 });
