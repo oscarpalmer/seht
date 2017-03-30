@@ -320,6 +320,22 @@
     },
 
     /**
+     * Get or set the HTML for elements.
+     *
+     * @param {String=} string
+     * @return {Seht} The original object
+     */
+    html: function (string) {
+      if (typeof string !== 'undefined') {
+        return each(this, function (element) {
+          element.innerHTML = string;
+        });
+      }
+
+      return this[0].innerHTML;
+    },
+
+    /**
      * Remove class names from elements.
      *
      * @param {...String} Class names
@@ -327,6 +343,22 @@
      */
     removeClass: function () {
       return each(this, Classes.remove, arguments);
+    },
+
+    /**
+     * Get or set the text for elements.
+     *
+     * @param {String=} string
+     * @return {Seht} The original object
+     */
+    text: function (string) {
+      if (typeof string !== 'undefined') {
+        return each(this, function (element) {
+          element.textContent = string;
+        });
+      }
+
+      return this[0].textContent;
     },
 
     /**
