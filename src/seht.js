@@ -300,6 +300,70 @@
     },
 
     /**
+     * Insert HTML after elements.
+     *
+     * @param {String} string - HTML to insert
+     * @return {Seht} The original object
+     */
+    after: function (string) {
+      var
+      html,
+      next;
+
+      // Turn the string into actual HTML
+      html = htmlify(string);
+
+      return each(this, function (element) {
+        // Define where to insert the HTML
+        next = element.nextSibling;
+
+        each(html, function (item) {
+          element.parentNode.insertBefore(item.cloneNode(true), next);
+        });
+      });
+    },
+
+    /**
+     * Append HTML to elements.
+     *
+     * @param {String} string - HTML to append
+     * @return {Seht} The original object
+     */
+    append: function (string) {
+      var
+      html;
+
+      // Turn the string into actual HTML
+      html = htmlify(string);
+
+      return each(this, function (element) {
+        each(html, function (item) {
+          element.appendChild(item.cloneNode(true));
+        })
+      });
+    },
+
+    /**
+     * Insert HTML before elements.
+     *
+     * @param {String} string - HTML to insert
+     * @return {Seht} The original object
+     */
+    before: function (string) {
+      var
+      html;
+
+      // Turn the string into actual HTML
+      html = htmlify(string);
+
+      return each(this, function (element) {
+        each(html, function (item) {
+          element.parentNode.insertBefore(item.cloneNode(true), element);
+        });
+      });
+    },
+
+    /**
      * Call a handler for each element in the Seht object.
      *
      * @param {Function} handler
@@ -333,6 +397,30 @@
       }
 
       return this[0].innerHTML;
+    },
+
+    /**
+     * Prepend HTML to elements.
+     *
+     * @param {String} string - HTML to prepend
+     * @return {Seht} The original object
+     */
+    prepend: function (string) {
+      var
+      first,
+      html;
+
+      // Turn the string into actual HTML
+      html = htmlify(string);
+
+      return each(this, function (element) {
+        // Define where to insert the HTML
+        first = element.firstChild;
+
+        each(html, function (item) {
+          element.insertBefore(item.cloneNode(true), first);
+        });
+      });
     },
 
     /**
