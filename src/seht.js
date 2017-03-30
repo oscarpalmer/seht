@@ -400,7 +400,7 @@
     /**
      * Get or set the HTML for elements.
      *
-     * @param {String=} string
+     * @param {String=} string - new HTML for elements
      * @return {Seht} The original object
      */
     html: function (string) {
@@ -467,7 +467,7 @@
     /**
      * Get or set the text for elements.
      *
-     * @param {String=} string
+     * @param {String=} string - New text for elements
      * @return {Seht} The original object
      */
     text: function (string) {
@@ -516,6 +516,22 @@
       });
 
       return string;
+    },
+
+    /**
+     * Set the value for an element.
+     *
+     * @param {String=} value - New value for elements
+     * @return {Seht} The original object
+     */
+    value: function (value) {
+      if (typeof value !== 'undefined') {
+        return each(this, function (element) {
+          element.value = value;
+        });
+      }
+
+      return this[0].value;
     }
   };
 
