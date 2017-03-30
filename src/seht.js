@@ -1,4 +1,4 @@
-(function(name, context, definition){
+(function (name, context, definition) {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = definition();
   } else if (typeof define === 'function' && define.amd) {
@@ -30,22 +30,22 @@
    */
 
   /**
-   * Call a handler for each item in an array or object.
+   * Call a handler for each value in an array or object.
    *
    * @param {Array|Object} obj - An array or object
-   * @param {Function} handler - Function to run for each item
+   * @param {Function} handler - Function to run for each value
    * @param {*} scope - Variable to access as 'this' in handler-function
    * @return {Array|Object} The iterated array or object
    */
-  function each(obj, handler, scope) {
+  function each (obj, handler, scope) {
     var
     property;
 
     if (isFinite(obj.length)) {
       // The object looks like an array
 
-      arrayProto.forEach.call(obj, function (item, index) {
-        handler.call(scope || item, item, index, obj);
+      arrayProto.forEach.call(obj, function (value, index) {
+        handler.call(scope || value, value, index, obj);
       });
     } else {
       // The object is presumed to be a regular object
@@ -64,7 +64,7 @@
   /**
    * Find elements based on variables.
    */
-  function find(selector, context) {
+  function find (selector, context) {
     if (selector === null || typeof selector === undefinedString) {
       // Nothing to search for, so let's return an empty array
 
@@ -90,7 +90,7 @@
   /**
    * Create HTML elements from a string.
    */
-  function htmlify(string) {
+  function htmlify (string) {
     var
     html;
 
@@ -108,9 +108,19 @@
   }
 
   /**
-   * Search for elements or create HTML elements.
+   * Create a new array based on result from
+   * handlers called on old values.
    */
-  function query(selector, context) {
+  function map (obj, handler, scope) {
+    return arrayProto.map.call(obj, function (value, index) {
+      return handler.call(scope || value, value, index);
+    });
+  }
+
+  /**
+   * Search for, or create HTML elements.
+   */
+  function query (selector, context) {
     if (Regex.ID.test(selector)) {
       // The string matches the regex for an ID-search
 
@@ -128,8 +138,17 @@
   /**
    * Trim and clean a string.
    */
-  function trim(string) {
+  function trim (string) {
     return string.trim().replace(/\s+/g, ' ');
+  }
+
+  /**
+   * Remove duplicate values in an array.
+   */
+  function unique (array) {
+    return arrayProto.filter.call(array, function (value, index, self) {
+      return arrayProto.indexOf.call(self, value) === index;
+    });
   }
 
   /**
@@ -279,6 +298,9 @@
     // Find elements
     elements = find(selector, context);
 
+    // Remove duplicate elements
+    elements = unique(elements);
+
     // Set length for the current object
     this.length = elements.length;
 
@@ -304,7 +326,7 @@
      * @param {...String} Class names
      * @return {Seht} The original object
      */
-    addClass: function() {
+    addClass: function () {
       return each(this, Classes.add, arguments);
     },
 
@@ -432,11 +454,22 @@
     /**
      * Call a handler for each element in the Seht object.
      *
-     * @param {Function} handler
+     * @param {Function} handler - Handler to call on each element
      * @return {Seht} The original object
      */
     each: function (handler) {
       return each(this, handler);
+    },
+
+    /**
+     * Empty an elements contents.
+     *
+     * @return {Seht} The original object
+     */
+    empty: function () {
+      return each(this, function (element) {
+        element.innerHTML = '';
+      });
     },
 
     /**
@@ -516,6 +549,28 @@
     },
 
     /**
+     * Create a new Seht object based on result from
+     * handlers called on old elements.
+     *
+     * @param {Function} handler - Handler to call on each element
+     * @return {Seht} The new object
+     */
+    map: function (handler) {
+      return seht(map(this, handler));
+    },
+
+    /**
+     * Create a Seht object based on elements parents.
+     *
+     * @return {Seht} The new object
+     */
+    parent: function () {
+      return seht(map(this, function (element) {
+        return element.parentNode;
+      }));
+    },
+
+    /**
      * Prepend HTML to elements.
      *
      * @param {String} string - HTML to prepend
@@ -547,6 +602,25 @@
      */
     prependTo: function (selector) {
       return seht(selector).prepend(this);
+    },
+
+    /**
+     * Remove elements from its context;
+     * returns their parents in a new Seht object.
+     *
+     * @return {Seht} The new object
+     */
+    remove: function () {
+      var
+      parents;
+
+      parents = this.parent();
+
+      each(this, function (element) {
+        element.parentNode.removeChild(element);
+      });
+
+      return parents;
     },
 
     /**
@@ -635,7 +709,9 @@
   };
 
   seht.each = each;
+  seht.map = map;
   seht.ready = Events.ready;
+  seht.unique = unique;
 
   return seht;
 });
