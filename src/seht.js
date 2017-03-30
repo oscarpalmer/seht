@@ -30,12 +30,12 @@
    */
 
   /**
-   * Call a handler for each value in an array or object.
+   * Call a function for each value in an array or object.
    *
    * @param {Array|Object} obj - An array or object
-   * @param {Function} handler - Function to run for each value
+   * @param {Function} handler - Function to call for each value
    * @param {*} scope - Variable to access as 'this' in handler-function
-   * @return {Array|Object} The iterated array or object
+   * @return {Array|Object} The original array or object
    */
   function each (obj, handler, scope) {
     var
@@ -109,7 +109,7 @@
 
   /**
    * Create a new array based on result from
-   * handlers called on old values.
+   * a function called on old values.
    */
   function map (obj, handler, scope) {
     return arrayProto.map.call(obj, function (value, index) {
@@ -133,6 +133,13 @@
 
     // Default …
     return context.querySelectorAll(selector);
+  }
+
+  /**
+   * Convert an array-like object to a proper array.
+   */
+  function toArray (obj) {
+    return arrayProto.slice.call(obj);
   }
 
   /**
@@ -245,9 +252,18 @@
   Events = {
 
     /**
+     * Add event listeners to an element or object.
+     */
+    add: function (element, types, handler) {
+      each(types, function (type) {
+        element.addEventListener(type, handler, false);
+      });
+    },
+
+    /**
      * Event handler for when the document is ready.
      *
-     * @param {Function} handler - Handler to call when ready
+     * @param {Function} handler - Function to call when ready
      */
     ready: function (handler) {
       if (Regex.Ready.test(doc.readyState)) {
@@ -259,6 +275,31 @@
 
         doc.addEventListener('DOMContentLoaded', handler);
       }
+    },
+
+    /**
+     * Remove event listeners from an element or object.
+     */
+    remove: function (element, types, handler) {
+      each(types, function (type) {
+        element.removeEventListener(type, handler, false);
+      });
+    },
+
+    /**
+     * Trigger events for an element or object.
+     */
+    trigger: function (element, types) {
+      var
+      event;
+
+      each(types, function (type) {
+        event = doc.createEvent('Event');
+
+        event.initEvent(type, true, true);
+
+        element.dispatchEvent(event);
+      });
     }
   };
 
@@ -560,6 +601,50 @@
     },
 
     /**
+     * Remove one more event handlers from an element.
+     *
+     * @param {...String} Event names and types
+     * @param {Function} Function to call for event
+     * @return {Seht} The original object
+     */
+    off: function () {
+      var
+      args,
+      handler;
+
+      // Allow for multiple event types
+      args = toArray(arguments);
+      // The event handler should be the last argument
+      handler = args.pop();
+
+      return each(this, function (element) {
+        Events.remove(element, args, handler);
+      });
+    },
+
+    /**
+     * Add one more event handlers to an element.
+     *
+     * @param {...String} Event names and types
+     * @param {Function} Function to call for event
+     * @return {Seht} The original object
+     */
+    on: function () {
+      var
+      args,
+      handler;
+
+      // Allow for multiple event types
+      args = toArray(arguments);
+      // The event handler should be the last argument
+      handler = args.pop();
+
+      return each(this, function (element) {
+        Events.add(element, args, handler);
+      });
+    },
+
+    /**
      * Create a Seht object based on elements parents.
      *
      * @return {Seht} The new object
@@ -667,7 +752,7 @@
      * @return {Array} Array of elements
      */
     toArray: function () {
-      return arrayProto.slice.call(this);
+      return toArray(this);
     },
 
     /**
@@ -687,6 +772,25 @@
       });
 
       return string;
+    },
+
+    /**
+     * Trigger one or more events for
+     * each element in the Seht object.
+     *
+     * @param {...String} Event names and types
+     * @return {Seht} The original object
+     */
+    trigger: function () {
+      var
+      args;
+
+      // Allow for multiple event types
+      args = arguments;
+
+      return each(this, function (element) {
+        Events.trigger(element, args);
+      });
     },
 
     /**
@@ -711,6 +815,7 @@
   seht.each = each;
   seht.map = map;
   seht.ready = Events.ready;
+  seht.toArray = toArray;
   seht.unique = unique;
 
   return seht;
