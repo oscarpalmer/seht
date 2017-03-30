@@ -89,6 +89,10 @@
     var
     html;
 
+    if (typeof string !== 'string') {
+      return string;
+    }
+
     // Create a new HTML document,
     html = doc.implementation.createHTMLDocument();
     // and set its content to the value of the supplied string
@@ -344,6 +348,16 @@
     },
 
     /**
+     * Append a Seht object to a selector.
+     *
+     * @param {*} selector - Query to search for
+     * @return {Seht} The new Seht object
+     */
+    appendTo: function (selector) {
+      return seht(selector).append(this);
+    },
+
+    /**
      * Insert HTML before elements.
      *
      * @param {String} string - HTML to insert
@@ -391,6 +405,13 @@
      */
     html: function (string) {
       if (typeof string !== 'undefined') {
+        if (string instanceof Seht) {
+          // The supplied string is actually Seht
+          // object, so let's flatten it.
+
+          string = this.toString();
+        }
+
         return each(this, function (element) {
           element.innerHTML = string;
         });
@@ -421,6 +442,16 @@
           element.insertBefore(item.cloneNode(true), first);
         });
       });
+    },
+
+    /**
+     * Prepend a Seht object to a selector.
+     *
+     * @param {*} selector - Query to search for
+     * @return {Seht} The new Seht object
+     */
+    prependTo: function (selector) {
+      return seht(selector).prepend(this);
     },
 
     /**
@@ -457,6 +488,34 @@
      */
     toggleClass: function () {
       return each(this, Classes.toggle, arguments);
+    },
+
+    /**
+     * Convert the Seht object to a regular array.
+     *
+     * @return {Array} Array of elements
+     */
+    toArray: function () {
+      return arrayProto.slice.call(this);
+    },
+
+    /**
+     * Flatten the Seht object and combine
+     * all elements' HTML.
+     *
+     * @return {String} The combined HTML
+     */
+    toString: function () {
+      var
+      string;
+
+      string = '';
+
+      each(this, function (element) {
+        string += element.innerHTML;
+      });
+
+      return string;
     }
   };
 
