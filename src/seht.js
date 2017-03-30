@@ -1,7 +1,7 @@
 (function(name, context, definition){
-  if (typeof module !== "undefined" && module.exports) {
+  if (typeof module !== 'undefined' && module.exports) {
     module.exports = definition();
-  } else if (typeof define === "function" && define.amd) {
+  } else if (typeof define === 'function' && define.amd) {
     define(definition);
   } else {
     context[name] = definition();
@@ -15,6 +15,7 @@
   win = window,
   doc = win.document,
   arrayProto = Array.prototype,
+  undefinedString = 'undefined',
   Regex = {
     HTML: /^\s*<([^\s>]+)/,
     ID: /^\#[\w\-]+$/,
@@ -64,7 +65,7 @@
    * Find elements based on variables.
    */
   function find(selector, context) {
-    if (selector === null || typeof selector === 'undefined') {
+    if (selector === null || typeof selector === undefinedString) {
       // Nothing to search for, so let's return an empty array
 
       return [];
@@ -362,6 +363,25 @@
     },
 
     /**
+     * Get or set attributes for elements.
+     *
+     * @param {String} name - Name of attribute
+     * @param {String=} value - New value for attribute
+     * @return {Seht|String} The original object or value of attribute
+     */
+    attr: function (name, value) {
+      if (typeof name !== undefinedString && typeof value !== undefinedString) {
+        return each(this, function (element) {
+          element.setAttribute(name, value);
+        });
+      } else if (this.length > 0) {
+        return this[0].getAttribute(name);
+      }
+
+      return null;
+    },
+
+    /**
      * Insert HTML before elements.
      *
      * @param {String} string - HTML to insert
@@ -379,6 +399,34 @@
           element.parentNode.insertBefore(item.cloneNode(true), element);
         });
       });
+    },
+
+    /**
+     * Get or set data-attributes for elements.
+     *
+     * @param {String} name - Name of attribute
+     * @param {String=} value - New value for attribute
+     * @return {Seht|String} The original object or value of attribute
+     */
+    data: function (name, value) {
+      // Define a proper data name
+      name = typeof name === undefinedString ? null : 'data-' + name;
+
+      if (name && typeof value !== undefinedString) {
+        // Convert a JS object to a JSON string
+        value = JSON.stringify(value);
+
+        return each(this, function (element) {
+          element.setAttribute(name, value);
+        });
+      } else if (this.length > 0) {
+        value = this[0].getAttribute(name);
+
+        // Return a parsed JSON string
+        return JSON.parse(value);
+      }
+
+      return null;
     },
 
     /**
@@ -440,7 +488,7 @@
      * @return {Seht} The original object
      */
     html: function (string) {
-      if (typeof string !== 'undefined') {
+      if (typeof string !== undefinedString) {
         if (string instanceof Seht) {
           // The supplied string is actually Seht
           // object, so let's flatten it.
@@ -518,7 +566,7 @@
      * @return {Seht} The original object
      */
     text: function (string) {
-      if (typeof string !== 'undefined') {
+      if (typeof string !== undefinedString) {
         return each(this, function (element) {
           element.textContent = string;
         });
@@ -574,13 +622,15 @@
      * @return {Seht} The original object
      */
     value: function (value) {
-      if (typeof value !== 'undefined') {
+      if (typeof value !== undefinedString) {
         return each(this, function (element) {
           element.value = value;
         });
+      } else if (this.length > 0) {
+        return this[0].value;
       }
 
-      return this[0].value;
+      return null;
     }
   };
 
