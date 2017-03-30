@@ -6,8 +6,8 @@
   } else {
     context[name] = definition();
 
-    if (typeof context['$'] === 'undefined') {
-      context['$'] = definition();
+    if (typeof context.$ === 'undefined') {
+      context.$ = definition();
     }
   }
 })('seht', this, function () {
@@ -124,7 +124,7 @@
     if (Regex.ID.test(selector)) {
       // The string matches the regex for an ID-search
 
-      return [context.getElementById(selector.slice(1))]
+      return [context.getElementById(selector.slice(1))];
     } else if (Regex.HTML.test(selector)) {
       // The string matches the regex for HTML, so let's 'htmlify' it
 
@@ -370,7 +370,7 @@
       return each(this, function (element) {
         each(html, function (item) {
           element.appendChild(item.cloneNode(true));
-        })
+        });
       });
     },
 
