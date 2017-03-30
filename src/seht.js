@@ -64,7 +64,11 @@
    * Find elements based on variables.
    */
   function find(selector, context) {
-    if (selector.nodeType || selector === selector.window) {
+    if (selector === null || typeof selector === 'undefined') {
+      // Nothing to search for, so let's return an empty array
+
+      return [];
+    } else if (selector.nodeType || selector === selector.window) {
       // The selector is an element or 'window'
 
       return [selector];
@@ -245,7 +249,7 @@
   /**
    * Function to call Sehts constructor.
    *
-   * @param {*} selector - Query to search for
+   * @param {*=} selector - Query to search for
    * @param {Element=} context - Item in which we look for 'selector'
    * @return {Seht} An old or new Seht object
    */
@@ -257,7 +261,7 @@
     }
 
     // Call the constructor for Seht
-    return new Seht(selector, context || doc);
+    return new Seht(selector || null, context || doc);
   }
 
   /**
@@ -291,7 +295,7 @@
     /**
      * Default length for a Seht object.
      */
-    length: null,
+    length: 0,
 
     /**
      * Add class names to elements.
@@ -351,7 +355,7 @@
      * Append a Seht object to a selector.
      *
      * @param {*} selector - Query to search for
-     * @return {Seht} The new Seht object
+     * @return {Seht} The new object
      */
     appendTo: function (selector) {
       return seht(selector).append(this);
@@ -388,6 +392,38 @@
     },
 
     /**
+     * Create a Seht object containing only
+     * the element at a specific position.
+     *
+     * @param {Number} index - Index for element
+     * @return {Seht|Null} The new object or null
+     */
+    eq: function (index) {
+      return seht(index >= 0 && index < this.length ? this[index] : null);
+    },
+
+    /**
+     * Create a Seht object containing only the first element.
+     *
+     * @return {Seht|Null} The new object or null
+     */
+    first: function () {
+      return this.eq(0);
+    },
+
+    /**
+     * Get an actual element in the Seht object
+     * from a specific position.
+     */
+    get: function (index) {
+      if (index >= 0 && index < this.length) {
+        return this[index];
+      }
+
+      return null;
+    },
+
+    /**
      * Verify if an element has a specific class name.
      *
      * @param {String} string - Class name to verify
@@ -415,9 +451,20 @@
         return each(this, function (element) {
           element.innerHTML = string;
         });
+      } else if (this.length > 0) {
+        return this[0].innerHTML;
       }
 
-      return this[0].innerHTML;
+      return null;
+    },
+
+    /**
+     * Create a Seht object containing only the last element.
+     *
+     * @return {Seht|Null} The new object or null
+     */
+    last: function () {
+      return this.eq(this.length - 1);
     },
 
     /**
@@ -448,7 +495,7 @@
      * Prepend a Seht object to a selector.
      *
      * @param {*} selector - Query to search for
-     * @return {Seht} The new Seht object
+     * @return {Seht} The new object
      */
     prependTo: function (selector) {
       return seht(selector).prepend(this);
@@ -475,9 +522,11 @@
         return each(this, function (element) {
           element.textContent = string;
         });
+      } else if (this.length > 0) {
+        return this[0].textContent;
       }
 
-      return this[0].textContent;
+      return null;
     },
 
     /**
