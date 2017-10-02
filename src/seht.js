@@ -1,27 +1,27 @@
 (function (name, context, definition) {
-  if (typeof module !== 'undefined' && module.exports) {
+  if (typeof module !== "undefined" && module.exports) {
     module.exports = definition();
-  } else if (typeof define === 'function' && define.amd) {
+  } else if (typeof define === "function" && define.amd) {
     define(definition);
   } else {
+    // window.seht
     context[name] = definition();
 
-    if (typeof context.$ === 'undefined') {
+    // and window.$
+    if (typeof context.$ === "undefined") {
       context.$ = definition();
     }
   }
-})('seht', this, function () {
+})("seht", this, function () {
   var
   win = window,
   doc = win.document,
   arrayProto = Array.prototype,
-  undefinedString = 'undefined',
+  undefinedString = "undefined",
   Regex = {
     HTML: /^\s*<([^\s>]+)/,
-    ID: /^\#[\w\-]+$/,
-    Ready: /(complete|interactive|loaded)/
+    ID: /^\#[\w\-]+$/
   },
-  Classes,
   Events,
   Seht;
 
@@ -34,7 +34,7 @@
    *
    * @param {Array|Object} obj - An array or object
    * @param {Function} handler - Function to call for each value
-   * @param {*} scope - Variable to access as 'this' in handler-function
+   * @param {*} scope - Variable to access as "this" in handler-function
    * @return {Array|Object} The original array or object
    */
   function each (obj, handler, scope) {
@@ -70,15 +70,15 @@
 
       return [];
     } else if (selector.nodeType || selector === selector.window) {
-      // The selector is an element or 'window'
+      // The selector is an element or "window"
 
       return [selector];
-    } else if (typeof selector === 'object' && isFinite(selector.length)) {
+    } else if (typeof selector === "object" && isFinite(selector.length)) {
       // The selector is an array
 
       return selector;
-    } else if (typeof selector === 'string') {
-      // The selector is a search query, so let's 'query' it
+    } else if (typeof selector === "string") {
+      // The selector is a search query, so let's "query" it
 
       return query(selector, context);
     }
@@ -94,7 +94,7 @@
     var
     html;
 
-    if (typeof string !== 'string') {
+    if (typeof string !== "string") {
       return string;
     }
 
@@ -126,12 +126,12 @@
 
       return [context.getElementById(selector.slice(1))];
     } else if (Regex.HTML.test(selector)) {
-      // The string matches the regex for HTML, so let's 'htmlify' it
+      // The string matches the regex for HTML, so let's "htmlify" it
 
       return htmlify(selector);
     }
 
-    // Default …
+    // Default selector search
     return context.querySelectorAll(selector);
   }
 
@@ -140,13 +140,6 @@
    */
   function toArray (obj) {
     return arrayProto.slice.call(obj);
-  }
-
-  /**
-   * Trim and clean a string.
-   */
-  function trim (string) {
-    return string.trim().replace(/\s+/g, ' ');
   }
 
   /**
@@ -159,131 +152,16 @@
   }
 
   /**
-   * Objects.
-   */
-
-  /**
-   * Object for handling element classes.
-   */
-  Classes = {
-
-    /**
-     * Add class names to an element.
-     *
-     * @this {Array} Array of class names
-     * @param {Element} element - Element to modify
-     */
-    add: function (element) {
-      each(this, function (name) {
-        if (Classes.contains(element, name) === false) {
-          Classes.addClass(element, name);
-        }
-      });
-
-      element.className = trim(element.className);
-    },
-
-    /**
-     * Add a single class name to an element.
-     */
-    addClass: function (element, name) {
-      element.className += ' ' + name;
-    },
-
-    /**
-     * Verify if an element has a specific class name.
-     */
-    contains: function (element, string) {
-      return Classes.regExp(string).test(element.className);
-    },
-
-    /**
-     * Create the regular expression for a class name.
-     */
-    regExp: function (string) {
-      return new RegExp('(^|\\s+)' + string + '(\\s+|$)');
-    },
-
-    /**
-     * Remove class names from an element.
-     *
-     * @this {Array} Array of class names
-     * @param {Element} element - Element to modify
-     */
-    remove: function (element, names) {
-      each(this, function (name) {
-        if (Classes.contains(element, name)) {
-          Classes.removeClass(element, name);
-        }
-      });
-
-      element.className = trim(element.className);
-    },
-
-    /**
-     * Remove a single class name from an element.
-     */
-    removeClass: function (element, name) {
-      element.className = element.className.replace(Classes.regExp(name), '');
-    },
-
-    /**
-     * Toggle classes for an element.
-     *
-     * @this {Array} Array of class names
-     * @param {Element} element - Element to modify
-     */
-    toggle: function (element) {
-      each(this, function (name) {
-        if (Classes.contains(element, name)) {
-          Classes.removeClass(element, name);
-        } else {
-          Classes.addClass(element, name);
-        }
-      });
-
-      element.className = trim(element.className);
-    }
-  };
-
-  /**
    * Object for handling events.
    */
   Events = {
-
-    /**
-     * Add event listeners to an element or object.
-     */
-    add: function (element, types, handler) {
-      each(types, function (type) {
-        element.addEventListener(type, handler, false);
-      });
-    },
-
     /**
      * Event handler for when the document is ready.
      *
      * @param {Function} handler - Function to call when ready
      */
     ready: function (handler) {
-      if (Regex.Ready.test(doc.readyState)) {
-        // Old-school ready-event
-
-        handler.call(doc);
-      } else {
-        // Modern ready-event
-
-        doc.addEventListener('DOMContentLoaded', handler);
-      }
-    },
-
-    /**
-     * Remove event listeners from an element or object.
-     */
-    remove: function (element, types, handler) {
-      each(types, function (type) {
-        element.removeEventListener(type, handler, false);
-      });
+      doc.addEventListener("DOMContentLoaded", handler);
     },
 
     /**
@@ -294,7 +172,7 @@
       event;
 
       each(types, function (type) {
-        event = doc.createEvent('Event');
+        event = doc.createEvent("CustomEvent");
 
         event.initEvent(type, true, true);
 
@@ -311,7 +189,7 @@
    * Function to call Sehts constructor.
    *
    * @param {*=} selector - Query to search for
-   * @param {Element=} context - Item in which we look for 'selector'
+   * @param {Element=} context - Item in which we look for "selector"
    * @return {Seht} An old or new Seht object
    */
   function seht(selector, context) {
@@ -330,7 +208,7 @@
    *
    * @constructor
    * @param {*} selector - Query to search for
-   * @param {Element} context - Item in which we search for 'selector'
+   * @param {Element} context - Item in which we search for "selector"
    */
   Seht = function (selector, context) {
     var
@@ -355,7 +233,6 @@
    * Prototypal methods or properties for Seht.
    */
   Seht.prototype = {
-
     /**
      * Default length for a Seht object.
      */
@@ -368,7 +245,16 @@
      * @return {Seht} The original object
      */
     addClass: function () {
-      return each(this, Classes.add, arguments);
+      var
+      args;
+
+      args = arguments;
+
+      return each(this, function (element) {
+        each(args, function (name) {
+          element.classList.add(name);
+        });
+      });
     },
 
     /**
@@ -378,20 +264,8 @@
      * @return {Seht} The original object
      */
     after: function (string) {
-      var
-      html,
-      next;
-
-      // Turn the string into actual HTML
-      html = htmlify(string);
-
       return each(this, function (element) {
-        // Define where to insert the HTML
-        next = element.nextSibling;
-
-        each(html, function (item) {
-          element.parentNode.insertBefore(item.cloneNode(true), next);
-        });
+        element.insertAdjacentHTML('afterend', string);
       });
     },
 
@@ -451,16 +325,8 @@
      * @return {Seht} The original object
      */
     before: function (string) {
-      var
-      html;
-
-      // Turn the string into actual HTML
-      html = htmlify(string);
-
       return each(this, function (element) {
-        each(html, function (item) {
-          element.parentNode.insertBefore(item.cloneNode(true), element);
-        });
+        element.insertAdjacentHTML('beforebegin', string);
       });
     },
 
@@ -473,7 +339,7 @@
      */
     data: function (name, value) {
       // Define a proper data name
-      name = typeof name === undefinedString ? null : 'data-' + name;
+      name = typeof name === undefinedString ? null : "data-" + name;
 
       if (name && typeof value !== undefinedString) {
         // Convert a JS object to a JSON string
@@ -509,7 +375,7 @@
      */
     empty: function () {
       return each(this, function (element) {
-        element.innerHTML = '';
+        element.innerHTML = "";
       });
     },
 
@@ -534,25 +400,13 @@
     },
 
     /**
-     * Get an actual element in the Seht object
-     * from a specific position.
-     */
-    get: function (index) {
-      if (index >= 0 && index < this.length) {
-        return this[index];
-      }
-
-      return null;
-    },
-
-    /**
      * Verify if an element has a specific class name.
      *
      * @param {String} string - Class name to verify
      * @return {Boolean}
      */
     hasClass: function (string) {
-      return Classes.contains(this[0], string);
+      return this[0].classList.contains(string);
     },
 
     /**
@@ -564,8 +418,8 @@
     html: function (string) {
       if (typeof string !== undefinedString) {
         if (string instanceof Seht) {
-          // The supplied string is actually Seht
-          // object, so let's flatten it.
+          // The supplied string is actually a
+          // Seht object, so let's flatten it.
 
           string = this.toString();
         }
@@ -601,51 +455,33 @@
     },
 
     /**
-     * Remove one more event handlers from an element.
+     * Remove an event handler from element(s).
      *
-     * @param {...String} Event names and types
-     * @param {Function} Function to call for event
+     * @param {...String} Event type
+     * @param {Function} Function to remove for event
      * @return {Seht} The original object
      */
-    off: function () {
-      var
-      args,
-      handler;
-
-      // Allow for multiple event types
-      args = toArray(arguments);
-      // The event handler should be the last argument
-      handler = args.pop();
-
+    off: function (type, fn) {
       return each(this, function (element) {
-        Events.remove(element, args, handler);
+        element.addEventListener(type, fn);
       });
     },
 
     /**
-     * Add one more event handlers to an element.
+     * Add an event handler to one or more element.
      *
-     * @param {...String} Event names and types
+     * @param {String} Event type
      * @param {Function} Function to call for event
      * @return {Seht} The original object
      */
-    on: function () {
-      var
-      args,
-      handler;
-
-      // Allow for multiple event types
-      args = toArray(arguments);
-      // The event handler should be the last argument
-      handler = args.pop();
-
+    on: function (type, fn) {
       return each(this, function (element) {
-        Events.add(element, args, handler);
+        element.addEventListener(type, fn);
       });
     },
 
     /**
-     * Create a Seht object based on elements parents.
+     * Create a Seht object based on elements' parents.
      *
      * @return {Seht} The new object
      */
@@ -715,7 +551,16 @@
      * @return {Seht} The original object
      */
     removeClass: function () {
-      return each(this, Classes.remove, arguments);
+      var
+      args;
+
+      args = arguments;
+
+      return each(this, function (element) {
+        each(args, function (name) {
+          element.classList.remove(name);
+        });
+      });
     },
 
     /**
@@ -743,7 +588,16 @@
      * @return {Seht} The original object
      */
     toggleClass: function () {
-      return each(this, Classes.toggle, arguments);
+      var
+      args;
+
+      args = arguments;
+
+      return each(this, function (element) {
+        each(args, function (name) {
+          element.classList.toggle(name);
+        });
+      });
     },
 
     /**
@@ -765,10 +619,10 @@
       var
       string;
 
-      string = '';
+      string = "";
 
       each(this, function (element) {
-        string += element.innerHTML;
+        string += element.outerHTML;
       });
 
       return string;
@@ -778,7 +632,7 @@
      * Trigger one or more events for
      * each element in the Seht object.
      *
-     * @param {...String} Event names and types
+     * @param {...String} Event types
      * @return {Seht} The original object
      */
     trigger: function () {
@@ -794,7 +648,7 @@
     },
 
     /**
-     * Set the value for an element.
+     * Get or set the value for an element.
      *
      * @param {String=} value - New value for elements
      * @return {Seht} The original object
@@ -812,11 +666,25 @@
     }
   };
 
-  seht.each = each;
-  seht.map = map;
-  seht.ready = Events.ready;
+  /**
+   * Useful functions to access outside of Seht's core.
+   */
+
+  seht.each    = each;
+  seht.map     = map;
+  seht.ready   = Events.ready;
   seht.toArray = toArray;
-  seht.unique = unique;
+  seht.unique  = unique;
+
+  /**
+   * Expose the prototype for easy extension.
+   */
+
+  seht.fn = Seht.prototype;
+
+  /**
+   * Return Seht to the global scope, loaders, etc.
+   */
 
   return seht;
 });
