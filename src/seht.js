@@ -16,6 +16,7 @@
   var
   win = window,
   doc = win.document,
+  objectProto = Object.prototype,
   arrayProto = Array.prototype,
   undefinedString = "undefined",
   Regex = {
@@ -51,7 +52,7 @@
       // The object is presumed to be a regular object
 
       for (property in obj) {
-        if (obj.hasOwnProperty(property)) {
+        if (objectPrototype.hasOwnProperty.call(obj, property)) {
           handler.call(scope || obj[property], obj[property], property, obj);
         }
       }
@@ -265,7 +266,7 @@
      */
     after: function (string) {
       return each(this, function (element) {
-        element.insertAdjacentHTML('afterend', string);
+        element.insertAdjacentHTML("afterend", string);
       });
     },
 
@@ -326,7 +327,7 @@
      */
     before: function (string) {
       return each(this, function (element) {
-        element.insertAdjacentHTML('beforebegin', string);
+        element.insertAdjacentHTML("beforebegin", string);
       });
     },
 
