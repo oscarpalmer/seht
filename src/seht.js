@@ -52,7 +52,7 @@
       // The object is presumed to be a regular object
 
       for (property in obj) {
-        if (objectPrototype.hasOwnProperty.call(obj, property)) {
+        if (objectProto.hasOwnProperty.call(obj, property)) {
           handler.call(scope || obj[property], obj[property], property, obj);
         }
       }
