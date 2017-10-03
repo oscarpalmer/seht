@@ -1,30 +1,48 @@
 (function (name, context, definition) {
-  if (typeof module !== "undefined" && module.exports) {
-    module.exports = definition();
-  } else if (typeof define === "function" && define.amd) {
-    define(definition);
-  } else {
-    // window.seht
-    context[name] = definition();
+  // window.seht
+  context[name] = definition();
 
-    // and window.$
-    if (typeof context.$ === "undefined") {
-      context.$ = definition();
-    }
+  // and window.$
+  if (typeof context.$ === "undefined") {
+    context.$ = definition();
   }
 })("seht", this, function () {
-  var
-  win = window,
-  doc = win.document,
-  objectProto = Object.prototype,
-  arrayProto = Array.prototype,
+  const
+  win             = window,
+  doc             = win.document,
+  objectProto     = Object.prototype,
+  arrayProto      = Array.prototype,
   undefinedString = "undefined",
   Regex = {
     HTML: /^\s*<([^\s>]+)/,
-    ID: /^\#[\w\-]+$/
+    ID: /^#[\w-]+$/
   },
-  Events,
-  Seht;
+  Events = {
+    /**
+     * Event handler for when the document is ready.
+     *
+     * @param {Function} handler - Function to call when ready
+     */
+    ready (handler) {
+      doc.addEventListener("DOMContentLoaded", handler);
+    },
+
+    /**
+     * Trigger events for an element or object.
+     */
+    trigger (element, types) {
+      let
+      event;
+
+      each(types, function (type) {
+        event = doc.createEvent("CustomEvent");
+
+        event.initEvent(type, true, true);
+
+        element.dispatchEvent(event);
+      });
+    }
+  };
 
   /**
    * Functions.
@@ -39,7 +57,7 @@
    * @return {Array|Object} The original array or object
    */
   function each (obj, handler, scope) {
-    var
+    let
     property;
 
     if (isFinite(obj.length)) {
@@ -92,15 +110,13 @@
    * Create HTML elements from a string.
    */
   function htmlify (string) {
-    var
-    html;
-
     if (typeof string !== "string") {
       return string;
     }
 
     // Create a new HTML document,
-    html = doc.implementation.createHTMLDocument();
+    const html = doc.implementation.createHTMLDocument();
+
     // and set its content to the value of the supplied string
     html.body.innerHTML = string;
 
@@ -153,36 +169,6 @@
   }
 
   /**
-   * Object for handling events.
-   */
-  Events = {
-    /**
-     * Event handler for when the document is ready.
-     *
-     * @param {Function} handler - Function to call when ready
-     */
-    ready: function (handler) {
-      doc.addEventListener("DOMContentLoaded", handler);
-    },
-
-    /**
-     * Trigger events for an element or object.
-     */
-    trigger: function (element, types) {
-      var
-      event;
-
-      each(types, function (type) {
-        event = doc.createEvent("CustomEvent");
-
-        event.initEvent(type, true, true);
-
-        element.dispatchEvent(event);
-      });
-    }
-  };
-
-  /**
    * Seht.
    */
 
@@ -193,7 +179,7 @@
    * @param {Element=} context - Item in which we look for "selector"
    * @return {Seht} An old or new Seht object
    */
-  function seht(selector, context) {
+  function seht (selector, context) {
     if (selector instanceof Seht) {
       // The selector is a Seht object, so let's return it as-is
 
@@ -211,8 +197,8 @@
    * @param {*} selector - Query to search for
    * @param {Element} context - Item in which we search for "selector"
    */
-  Seht = function (selector, context) {
-    var
+  function Seht (selector, context) {
+    let
     elements;
 
     // Find elements
@@ -228,7 +214,7 @@
     each(elements, function (element, index) {
       this[index] = element;
     }, this);
-  };
+  }
 
   /**
    * Prototypal methods or properties for Seht.
@@ -245,11 +231,8 @@
      * @param {...String} Class names
      * @return {Seht} The original object
      */
-    addClass: function () {
-      var
-      args;
-
-      args = arguments;
+    addClass () {
+      const args = arguments;
 
       return each(this, function (element) {
         each(args, function (name) {
@@ -264,7 +247,7 @@
      * @param {String} string - HTML to insert
      * @return {Seht} The original object
      */
-    after: function (string) {
+    after (string) {
       return each(this, function (element) {
         element.insertAdjacentHTML("afterend", string);
       });
@@ -276,12 +259,9 @@
      * @param {String} string - HTML to append
      * @return {Seht} The original object
      */
-    append: function (string) {
-      var
-      html;
-
+    append (string) {
       // Turn the string into actual HTML
-      html = htmlify(string);
+      const html = htmlify(string);
 
       return each(this, function (element) {
         each(html, function (item) {
@@ -296,7 +276,7 @@
      * @param {*} selector - Query to search for
      * @return {Seht} The new object
      */
-    appendTo: function (selector) {
+    appendTo (selector) {
       return seht(selector).append(this);
     },
 
@@ -307,7 +287,7 @@
      * @param {String=} value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
-    attr: function (name, value) {
+    attr (name, value) {
       if (typeof name !== undefinedString && typeof value !== undefinedString) {
         return each(this, function (element) {
           element.setAttribute(name, value);
@@ -325,7 +305,7 @@
      * @param {String} string - HTML to insert
      * @return {Seht} The original object
      */
-    before: function (string) {
+    before (string) {
       return each(this, function (element) {
         element.insertAdjacentHTML("beforebegin", string);
       });
@@ -338,7 +318,7 @@
      * @param {String=} value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
-    data: function (name, value) {
+    data (name, value) {
       // Define a proper data name
       name = typeof name === undefinedString ? null : "data-" + name;
 
@@ -365,7 +345,7 @@
      * @param {Function} handler - Handler to call on each element
      * @return {Seht} The original object
      */
-    each: function (handler) {
+    each (handler) {
       return each(this, handler);
     },
 
@@ -374,7 +354,7 @@
      *
      * @return {Seht} The original object
      */
-    empty: function () {
+    empty () {
       return each(this, function (element) {
         element.innerHTML = "";
       });
@@ -387,7 +367,7 @@
      * @param {Number} index - Index for element
      * @return {Seht|Null} The new object or null
      */
-    eq: function (index) {
+    eq (index) {
       return seht(index >= 0 && index < this.length ? this[index] : null);
     },
 
@@ -396,7 +376,7 @@
      *
      * @return {Seht|Null} The new object or null
      */
-    first: function () {
+    first () {
       return this.eq(0);
     },
 
@@ -406,7 +386,7 @@
      * @param {String} string - Class name to verify
      * @return {Boolean}
      */
-    hasClass: function (string) {
+    hasClass (string) {
       return this[0].classList.contains(string);
     },
 
@@ -416,7 +396,7 @@
      * @param {String=} string - new HTML for elements
      * @return {Seht} The original object
      */
-    html: function (string) {
+    html (string) {
       if (typeof string !== undefinedString) {
         if (string instanceof Seht) {
           // The supplied string is actually a
@@ -440,7 +420,7 @@
      *
      * @return {Seht|Null} The new object or null
      */
-    last: function () {
+    last () {
       return this.eq(this.length - 1);
     },
 
@@ -451,7 +431,7 @@
      * @param {Function} handler - Handler to call on each element
      * @return {Seht} The new object
      */
-    map: function (handler) {
+    map (handler) {
       return seht(map(this, handler));
     },
 
@@ -462,7 +442,7 @@
      * @param {Function} Function to remove for event
      * @return {Seht} The original object
      */
-    off: function (type, fn) {
+    off (type, fn) {
       return each(this, function (element) {
         element.addEventListener(type, fn);
       });
@@ -475,7 +455,7 @@
      * @param {Function} Function to call for event
      * @return {Seht} The original object
      */
-    on: function (type, fn) {
+    on (type, fn) {
       return each(this, function (element) {
         element.addEventListener(type, fn);
       });
@@ -486,7 +466,7 @@
      *
      * @return {Seht} The new object
      */
-    parent: function () {
+    parent () {
       return seht(map(this, function (element) {
         return element.parentNode;
       }));
@@ -498,13 +478,12 @@
      * @param {String} string - HTML to prepend
      * @return {Seht} The original object
      */
-    prepend: function (string) {
-      var
-      first,
-      html;
+    prepend (string) {
+      let
+      first;
 
       // Turn the string into actual HTML
-      html = htmlify(string);
+      const html = htmlify(string);
 
       return each(this, function (element) {
         // Define where to insert the HTML
@@ -522,7 +501,7 @@
      * @param {*} selector - Query to search for
      * @return {Seht} The new object
      */
-    prependTo: function (selector) {
+    prependTo (selector) {
       return seht(selector).prepend(this);
     },
 
@@ -532,11 +511,8 @@
      *
      * @return {Seht} The new object
      */
-    remove: function () {
-      var
-      parents;
-
-      parents = this.parent();
+    remove () {
+      const parents = this.parent();
 
       each(this, function (element) {
         element.parentNode.removeChild(element);
@@ -551,11 +527,8 @@
      * @param {...String} Class names
      * @return {Seht} The original object
      */
-    removeClass: function () {
-      var
-      args;
-
-      args = arguments;
+    removeClass () {
+      const args = arguments;
 
       return each(this, function (element) {
         each(args, function (name) {
@@ -570,7 +543,7 @@
      * @param {String=} string - New text for elements
      * @return {Seht} The original object
      */
-    text: function (string) {
+    text (string) {
       if (typeof string !== undefinedString) {
         return each(this, function (element) {
           element.textContent = string;
@@ -583,16 +556,22 @@
     },
 
     /**
+     * Convert the Seht object to a regular array.
+     *
+     * @return {Array} Array of elements
+     */
+    toArray () {
+      return toArray(this);
+    },
+
+    /**
      * Toggle class names for elements.
      *
      * @param {...String} Class names
      * @return {Seht} The original object
      */
-    toggleClass: function () {
-      var
-      args;
-
-      args = arguments;
+    toggleClass () {
+      const args = arguments;
 
       return each(this, function (element) {
         each(args, function (name) {
@@ -602,24 +581,13 @@
     },
 
     /**
-     * Convert the Seht object to a regular array.
-     *
-     * @return {Array} Array of elements
-     */
-    toArray: function () {
-      return toArray(this);
-    },
-
-    /**
      * Flatten the Seht object and combine
      * all elements' HTML.
      *
      * @return {String} The combined HTML
      */
-    toString: function () {
-      var
-      string;
-
+    toString () {
+      let
       string = "";
 
       each(this, function (element) {
@@ -636,12 +604,9 @@
      * @param {...String} Event types
      * @return {Seht} The original object
      */
-    trigger: function () {
-      var
-      args;
-
+    trigger () {
       // Allow for multiple event types
-      args = arguments;
+      const args = arguments;
 
       return each(this, function (element) {
         Events.trigger(element, args);
@@ -654,7 +619,7 @@
      * @param {String=} value - New value for elements
      * @return {Seht} The original object
      */
-    value: function (value) {
+    value (value) {
       if (typeof value !== undefinedString) {
         return each(this, function (element) {
           element.value = value;

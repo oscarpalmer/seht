@@ -4,7 +4,7 @@
 
 A JavaScript library, and a decent replacement – hopefully – for jQuery, et alia.
 
-Until a `1.0` of Seht has been released, you should probably use [jQuery](//github.com/jquery/jquery) or [Zepto](//github.com/madrobby/zepto).
+Until a `1.0` of Seht has been released, you should probably use [jQuery](//github.com/jquery/jquery) or [Zepto](//github.com/madrobby/zepto). :v:
 
 ## The name
 
@@ -12,7 +12,11 @@ Until a `1.0` of Seht has been released, you should probably use [jQuery](//gith
 >
 > &lsquo;It cannot be fixed now&rsquo;, said the sorcerer quietly.
 
-&mdash; Carlovac Townway, Book Twelve of _[2920, The Last Year of the First Era](http://en.uesp.net/wiki/Lore:2920,_Evening_Star_%28v12%29)_
+&mdash; Carlovac Townway, Book Twelve of _[2920, The Last Year of the First Era](http://en.uesp.net/wiki/Lore:2920,_Evening_Star_%28v12%29)_ :books:
+
+## Older browsers
+
+Seht uses a few things introduced in later version of [ECMAScript](//en.wikipedia.org/wiki/ECMAScript), so if you're unsure of what may or may not be supported, I'd recommend using [the file](dist/seht.babel.js) compiled by [Babel](//babeljs.io) instead. :blush:
 
 ## License
 

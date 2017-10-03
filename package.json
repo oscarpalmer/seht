@@ -2,25 +2,35 @@
   "author": {
     "email": "opalmer@me.com",
     "name":  "Oscar Palmér",
-    "url":   "http://oscar.pm"
+    "url":   "https://oscar.pm"
   },
   "description": "A JavaScript library.",
   "devDependencies": {
-    "gulp":        "3.9.x",
-    "gulp-jshint": "2.0.x",
-    "gulp-uglify": "3.0.x",
-    "jshint":      "2.9.x",
-    "pump":        "1.0.x"
+    "babel-core":       "6.26.x",
+    "babel-preset-env": "1.6.x",
+    "gulp":             "3.9.x",
+    "gulp-babel":       "7.0.x",
+    "gulp-eslint":      "4.0.x",
+    "gulp-rename":      "1.2.x",
+    "gulp-uglify":      "3.0.x",
+    "pump":             "1.0.x",
+    "uglify-es":        "3.1.x"
   },
-  "files":    ["dist/seht.js"],
+  "files": [
+    "dist/seht.js"
+  ],
   "homepage": "http://git.io/seht",
-  "keywords": ["dom", "events", "selector"],
-  "license":  "MIT",
-  "main":     "dist/seht.js",
-  "name":     "seht",
+  "keywords": [
+    "dom",
+    "events",
+    "selector"
+  ],
+  "license": "MIT",
+  "main": "dist/seht.js",
+  "name": "seht",
   "repository": {
     "type": "git",
     "url":  "https://github.com/oscarpalmer/seht.git"
   },
-  "version": "0.7.2"
+  "version": "0.8.0"
 }
