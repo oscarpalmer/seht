@@ -444,7 +444,7 @@
      */
     off (type, fn) {
       return each(this, function (element) {
-        element.addEventListener(type, fn);
+        element.removeEventListener(type, fn);
       });
     },
 
