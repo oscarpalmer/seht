@@ -12,16 +12,17 @@
   doc             = win.document,
   objectProto     = Object.prototype,
   arrayProto      = Array.prototype,
+  stringString    = "string",
   undefinedString = "undefined",
   Regex = {
-    HTML: /^\s*<([^\s>]+)/,
-    ID: /^#[\w-]+$/
+    html: /^\s*<([^\s>]+)/,
+    id: /^#[\w-]+$/
   },
   Events = {
     /**
      * Event handler for when the document is ready.
      *
-     * @param {Function} handler - Function to call when ready
+     * @param  {Function} handler - Function to call when ready
      */
     ready (handler) {
       doc.addEventListener("DOMContentLoaded", handler);
@@ -49,11 +50,41 @@
    */
 
   /**
+   * Define the context for a selector query.
+   */
+  function defineContext (context) {
+    if (typeof context === undefinedString) {
+
+      // No context; defaults to document
+      return doc;
+
+    } else if (context instanceof Seht || context.nodeType) {
+
+      // A Seht object or a regular element
+      return context;
+
+    } else if (typeof context === stringString) {
+
+      // Context is also a selector
+      return query(context, doc);
+
+    } else if (isFinite(context.length)) {
+
+      // Context is an array or array-like object
+      return context;
+
+    }
+
+    // Bad context; defaults to document
+    return doc;
+  }
+
+  /**
    * Call a function for each value in an array or object.
    *
-   * @param {Array|Object} obj - An array or object
-   * @param {Function} handler - Function to call for each value
-   * @param {*} scope - Variable to access as "this" in handler-function
+   * @param  {Array|Object} obj     - An array or object
+   * @param  {Function}     handler - Function to call for each value
+   * @param  {*}            scope   - Variable to access as "this" in handler
    * @return {Array|Object} The original array or object
    */
   function each (obj, handler, scope) {
@@ -85,21 +116,25 @@
    */
   function find (selector, context) {
     if (selector === null || typeof selector === undefinedString) {
+
       // Nothing to search for, so let's return an empty array
-
       return [];
+
     } else if (selector.nodeType || selector === selector.window) {
+
       // The selector is an element or "window"
-
       return [selector];
+
     } else if (typeof selector === "object" && isFinite(selector.length)) {
+
       // The selector is an array
-
       return selector;
-    } else if (typeof selector === "string") {
-      // The selector is a search query, so let's "query" it
 
+    } else if (typeof selector === stringString) {
+
+      // The selector is a search query, so let's search for it
       return query(selector, context);
+
     }
 
     // Nothing to search for, so let's return an empty array
@@ -110,7 +145,7 @@
    * Create HTML elements from a string.
    */
   function htmlify (string) {
-    if (typeof string !== "string") {
+    if (typeof string !== stringString) {
       return string;
     }
 
@@ -125,8 +160,29 @@
   }
 
   /**
+   * Insert HTML relative to elements' position
+   */
+  function insertAdjacentHTML (elements, position, html) {
+    if (html instanceof Seht) {
+
+      // The supplied string is actually a
+      // Seht object, so let's flatten it.
+      html = html.toString();
+    }
+
+    return elements.each(function (element) {
+      element.insertAdjacentHTML(position, html);
+    });
+  }
+
+  /**
    * Create a new array based on result from
    * a function called on old values.
+   *
+   * @param  {Array|Object} obj     - An array or object
+   * @param  {Function}     handler - Function to call for each value
+   * @param  {*}            scope   - Variable to access as "this" in handler
+   * @return {Array}        A new array based on old values and handler-results
    */
   function map (obj, handler, scope) {
     return arrayProto.map.call(obj, function (value, index) {
@@ -138,14 +194,39 @@
    * Search for, or create HTML elements.
    */
   function query (selector, context) {
-    if (Regex.ID.test(selector)) {
+    let
+    ret;
+
+    // Define a context for the query
+    context = defineContext(context);
+
+    if (isFinite(context.length)) {
+      // Multiple contexts, so let's search them all
+
+      ret = [];
+      each(context, function (ctx) {
+
+        // Search each context and concatenate
+        // the result to a new array
+        ret = ret.concat(toArray(query(selector, ctx)));
+
+      });
+
+      return ret;
+    }
+
+    if (Regex.id.test(selector)) {
+
       // The string matches the regex for an ID-search
-
       return [context.getElementById(selector.slice(1))];
-    } else if (Regex.HTML.test(selector)) {
-      // The string matches the regex for HTML, so let's "htmlify" it
 
+    }
+
+    if (Regex.html.test(selector)) {
+
+      // The string matches the regex for HTML, so let's "htmlify" it
       return htmlify(selector);
+
     }
 
     // Default selector search
@@ -154,16 +235,29 @@
 
   /**
    * Convert an array-like object to a proper array.
+   *
+   * @param  {Array|Object} obj - An array or object
+   * @return {Array}        A new clean array based on the old one
    */
   function toArray (obj) {
     return arrayProto.slice.call(obj);
   }
 
   /**
-   * Remove duplicate values in an array.
+   * Remove duplicate values in an array or array-like object.
+   *
+   * @param  {Array|Object} obj - An array or object
+   * @return {Array}        A duplicate-free array based on the old one
    */
-  function unique (array) {
-    return arrayProto.filter.call(array, function (value, index, self) {
+  function unique (obj) {
+    if (obj.length =< 1) {
+
+      // It should already be unique, right
+      return toArray(obj);
+
+    }
+
+    return arrayProto.filter.call(obj, function (value, index, self) {
       return arrayProto.indexOf.call(self, value) === index;
     });
   }
@@ -175,27 +269,29 @@
   /**
    * Function to call Sehts constructor.
    *
-   * @param {*=} selector - Query to search for
-   * @param {Element=} context - Item in which we look for "selector"
-   * @return {Seht} An old or new Seht object
+   * @param  {*=}       selector - Query to search for
+   * @param  {Element=} context  - Item in which we look for "selector"
+   * @return {Seht}     An old or new Seht object
    */
   function seht (selector, context) {
     if (selector instanceof Seht) {
-      // The selector is a Seht object, so let's return it as-is
 
+      // The selector is a Seht object, so let's return it as-is
       return selector;
+
     }
 
     // Call the constructor for Seht
-    return new Seht(selector || null, context || doc);
+    return new Seht(selector, context);
   }
 
   /**
    * Initiates a Seht object.
    *
    * @constructor
-   * @param {*} selector - Query to search for
-   * @param {Element} context - Item in which we search for "selector"
+   * @param  {*}       selector - Query to search for
+   * @param  {Element} context  - Item in which we search for "selector"
+   * @return {Seht}    A new Seht object
    */
   function Seht (selector, context) {
     let
@@ -210,9 +306,11 @@
     // Set length for the current object
     this.length = elements.length;
 
-    // Add each element to the current object
     each(elements, function (element, index) {
+
+      // Add each element to the current object
       this[index] = element;
+
     }, this);
   }
 
@@ -228,8 +326,8 @@
     /**
      * Add class names to elements.
      *
-     * @param {...String} Class names
-     * @return {Seht} The original object
+     * @param  {...String} Class names
+     * @return {Seht}      The original object
      */
     addClass () {
       const args = arguments;
@@ -244,36 +342,27 @@
     /**
      * Insert HTML after elements.
      *
-     * @param {String} string - HTML to insert
-     * @return {Seht} The original object
+     * @param  {String} html - HTML to insert
+     * @return {Seht}   The original object
      */
-    after (string) {
-      return each(this, function (element) {
-        element.insertAdjacentHTML("afterend", string);
-      });
+    after (html) {
+      return insertAdjacentHTML(this, "afterend", html);
     },
 
     /**
      * Append HTML to elements.
      *
-     * @param {String} string - HTML to append
-     * @return {Seht} The original object
+     * @param  {String} html - HTML to append
+     * @return {Seht}   The original object
      */
-    append (string) {
-      // Turn the string into actual HTML
-      const html = htmlify(string);
-
-      return each(this, function (element) {
-        each(html, function (item) {
-          element.appendChild(item.cloneNode(true));
-        });
-      });
+    append (html) {
+      return insertAdjacentHTML(this, "beforeend", html);
     },
 
     /**
      * Append a Seht object to a selector.
      *
-     * @param {*} selector - Query to search for
+     * @param  {*}    selector - Query to search for
      * @return {Seht} The new object
      */
     appendTo (selector) {
@@ -283,8 +372,8 @@
     /**
      * Get or set attributes for elements.
      *
-     * @param {String} name - Name of attribute
-     * @param {String=} value - New value for attribute
+     * @param  {String}      name  - Name of attribute
+     * @param  {String=}     value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
     attr (name, value) {
@@ -302,20 +391,18 @@
     /**
      * Insert HTML before elements.
      *
-     * @param {String} string - HTML to insert
-     * @return {Seht} The original object
+     * @param  {String} html - HTML to insert
+     * @return {Seht}   The original object
      */
-    before (string) {
-      return each(this, function (element) {
-        element.insertAdjacentHTML("beforebegin", string);
-      });
+    before (html) {
+      return insertAdjacentHTML(this, "beforebegin", html);
     },
 
     /**
      * Get or set data-attributes for elements.
      *
-     * @param {String} name - Name of attribute
-     * @param {String=} value - New value for attribute
+     * @param  {String}      name  - Name of attribute
+     * @param  {String=}     value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
     data (name, value) {
@@ -323,6 +410,7 @@
       name = typeof name === undefinedString ? null : "data-" + name;
 
       if (name && typeof value !== undefinedString) {
+
         // Convert a JS object to a JSON string
         value = JSON.stringify(value);
 
@@ -342,8 +430,8 @@
     /**
      * Call a handler for each element in the Seht object.
      *
-     * @param {Function} handler - Handler to call on each element
-     * @return {Seht} The original object
+     * @param  {Function} handler - Handler to call on each element
+     * @return {Seht}     The original object
      */
     each (handler) {
       return each(this, handler);
@@ -364,7 +452,7 @@
      * Create a Seht object containing only
      * the element at a specific position.
      *
-     * @param {Number} index - Index for element
+     * @param  {Number}    index - Index for element
      * @return {Seht|Null} The new object or null
      */
     eq (index) {
@@ -383,7 +471,7 @@
     /**
      * Verify if an element has a specific class name.
      *
-     * @param {String} string - Class name to verify
+     * @param  {String}  string - Class name to verify
      * @return {Boolean}
      */
     hasClass (string) {
@@ -393,16 +481,17 @@
     /**
      * Get or set the HTML for elements.
      *
-     * @param {String=} string - new HTML for elements
-     * @return {Seht} The original object
+     * @param  {String=} string - Optional new HTML for elements
+     * @return {Seht}    The original object or element's HTML
      */
     html (string) {
       if (typeof string !== undefinedString) {
         if (string instanceof Seht) {
+
           // The supplied string is actually a
           // Seht object, so let's flatten it.
-
           string = this.toString();
+
         }
 
         return each(this, function (element) {
@@ -428,8 +517,8 @@
      * Create a new Seht object based on result from
      * handlers called on old elements.
      *
-     * @param {Function} handler - Handler to call on each element
-     * @return {Seht} The new object
+     * @param  {Function} handler - Handler to call on each element
+     * @return {Seht}     The new object
      */
     map (handler) {
       return seht(map(this, handler));
@@ -438,26 +527,26 @@
     /**
      * Remove an event handler from element(s).
      *
-     * @param {...String} Event type
-     * @param {Function} Function to remove for event
-     * @return {Seht} The original object
+     * @param  {String}   type    - Event type
+     * @param  {Function} handler - Function to remove for event
+     * @return {Seht}     The original object
      */
-    off (type, fn) {
+    off (type, handler) {
       return each(this, function (element) {
-        element.removeEventListener(type, fn);
+        element.removeEventListener(type, handler);
       });
     },
 
     /**
      * Add an event handler to one or more element.
      *
-     * @param {String} Event type
-     * @param {Function} Function to call for event
-     * @return {Seht} The original object
+     * @param  {String}   type    - Event type
+     * @param  {Function} handler - Function to call for event
+     * @return {Seht}     The original object
      */
-    on (type, fn) {
+    on (type, handler) {
       return each(this, function (element) {
-        element.addEventListener(type, fn);
+        element.addEventListener(type, handler);
       });
     },
 
@@ -475,30 +564,17 @@
     /**
      * Prepend HTML to elements.
      *
-     * @param {String} string - HTML to prepend
-     * @return {Seht} The original object
+     * @param  {String} html - HTML to prepend
+     * @return {Seht}   The original object
      */
-    prepend (string) {
-      let
-      first;
-
-      // Turn the string into actual HTML
-      const html = htmlify(string);
-
-      return each(this, function (element) {
-        // Define where to insert the HTML
-        first = element.firstChild;
-
-        each(html, function (item) {
-          element.insertBefore(item.cloneNode(true), first);
-        });
-      });
+    prepend (html) {
+      return insertAdjacentHTML(this, "afterbegin", html);
     },
 
     /**
      * Prepend a Seht object to a selector.
      *
-     * @param {*} selector - Query to search for
+     * @param  {*}    selector - Query to search for
      * @return {Seht} The new object
      */
     prependTo (selector) {
@@ -524,8 +600,8 @@
     /**
      * Remove class names from elements.
      *
-     * @param {...String} Class names
-     * @return {Seht} The original object
+     * @param  {...String} Class names
+     * @return {Seht}      The original object
      */
     removeClass () {
       const args = arguments;
@@ -540,8 +616,8 @@
     /**
      * Get or set the text for elements.
      *
-     * @param {String=} string - New text for elements
-     * @return {Seht} The original object
+     * @param  {String=}     string - Optional new text for elements
+     * @return {Seht|String} The original object or element's text
      */
     text (string) {
       if (typeof string !== undefinedString) {
@@ -567,8 +643,8 @@
     /**
      * Toggle class names for elements.
      *
-     * @param {...String} Class names
-     * @return {Seht} The original object
+     * @param  {...String} Class names
+     * @return {Seht}      The original object
      */
     toggleClass () {
       const args = arguments;
@@ -601,8 +677,8 @@
      * Trigger one or more events for
      * each element in the Seht object.
      *
-     * @param {...String} Event types
-     * @return {Seht} The original object
+     * @param  {...String} Event types
+     * @return {Seht}      The original object
      */
     trigger () {
       // Allow for multiple event types
@@ -616,8 +692,8 @@
     /**
      * Get or set the value for an element.
      *
-     * @param {String=} value - New value for elements
-     * @return {Seht} The original object
+     * @param  {String=} value - Optional new value for elements
+     * @return {Seht}    The original object or element's value
      */
     value (value) {
       if (typeof value !== undefinedString) {
