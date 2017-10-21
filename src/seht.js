@@ -250,7 +250,7 @@
    * @return {Array}        A duplicate-free array based on the old one
    */
   function unique (obj) {
-    if (obj.length =< 1) {
+    if (obj.length <= 1) {
 
       // It should already be unique, right
       return toArray(obj);
