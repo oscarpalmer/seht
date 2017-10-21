@@ -4,7 +4,7 @@
 
   // and window.$
   if (typeof context.$ === "undefined") {
-    context.$ = definition();
+    context.$ = context[name];
   }
 })("seht", this, function () {
   const
