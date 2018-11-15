@@ -378,7 +378,7 @@
      */
     data(name, value) {
       // Define a proper data name
-      name = typeof name === undefinedString ? null : 'data-$name';
+      name = typeof name === undefinedString ? null : 'data-' + name;
 
       if (name && typeof value !== undefinedString) {
         // Convert a JS object to a JSON string

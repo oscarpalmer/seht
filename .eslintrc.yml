@@ -8,5 +8,6 @@ rules:
   no-param-reassign: off
   no-use-before-define: off
   prefer-rest-params: off
+  prefer-template: off
   react/no-this-in-sfc: off
   valid-typeof: off
