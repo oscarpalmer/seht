@@ -4,17 +4,25 @@
     "name":  "Oscar Palmér",
     "url":   "https://oscar.pm"
   },
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  },
   "description": "A JavaScript library.",
   "devDependencies": {
-    "babel-core":       "6.26.x",
-    "babel-preset-env": "1.6.x",
-    "gulp":             "3.9.x",
-    "gulp-babel":       "7.0.x",
-    "gulp-eslint":      "4.0.x",
-    "gulp-rename":      "1.2.x",
-    "gulp-uglify":      "3.0.x",
-    "pump":             "1.0.x",
-    "uglify-es":        "3.1.x"
+    "@babel/core":            "7.1.x",
+    "@babel/preset-env":      "7.1.x",
+    "eslint":                 "5.9.x",
+    "eslint-config-airbnb":   "17.1.x",
+    "eslint-plugin-import":   "2.14.x",
+    "eslint-plugin-jsx-a11y": "6.1.x",
+    "eslint-plugin-react":    "7.11.x",
+    "gulp":                   "3.9.x",
+    "gulp-babel":             "8.0.x",
+    "gulp-eslint":            "5.0.x",
+    "gulp-rename":            "1.4.x",
+    "gulp-uglify":            "3.0.x",
+    "pump":                   "3.0.x",
+    "uglify-es":              "3.3.x"
   },
   "files": [
     "dist/seht.js"
@@ -32,5 +40,5 @@
     "type": "git",
     "url":  "https://github.com/oscarpalmer/seht.git"
   },
-  "version": "0.9.1"
+  "version": "0.10.0"
 }

@@ -1,48 +1,49 @@
-(function (name, context, definition) {
+((name, context, definition) => {
+  const scope = context;
+
   // window.seht
-  context[name] = definition();
+  scope[name] = definition();
 
   // and window.$
-  if (typeof context.$ === "undefined") {
-    context.$ = context[name];
+  if (typeof scope.$ === 'undefined') {
+    scope.$ = scope[name];
   }
-})("seht", this, function () {
-  const
-  win             = window,
-  doc             = win.document,
-  objectProto     = Object.prototype,
-  arrayProto      = Array.prototype,
-  stringString    = "string",
-  undefinedString = "undefined",
-  Regex = {
+})('seht', this, () => {
+  const win = window;
+  const doc = win.document;
+  const arrayPrototype = Array.prototype;
+  const stringString = 'string';
+  const undefinedString = 'undefined';
+
+  const Regex = {
     html: /^\s*<([^\s>]+)/,
-    id: /^#[\w-]+$/
-  },
-  Events = {
+    id: /^#[\w-]+$/,
+  };
+
+  const Events = {
     /**
      * Event handler for when the document is ready.
      *
      * @param  {Function} handler - Function to call when ready
      */
-    ready (handler) {
-      doc.addEventListener("DOMContentLoaded", handler);
+    ready: (handler) => {
+      doc.addEventListener('DOMContentLoaded', handler);
     },
 
     /**
      * Trigger events for an element or object.
      */
-    trigger (element, types) {
-      let
-      event;
+    trigger: (element, types) => {
+      let event;
 
-      each(types, function (type) {
-        event = doc.createEvent("CustomEvent");
+      each(types, (type) => {
+        event = doc.createEvent('CustomEvent');
 
         event.initEvent(type, true, true);
 
         element.dispatchEvent(event);
       });
-    }
+    },
   };
 
   /**
@@ -52,27 +53,25 @@
   /**
    * Define the context for a selector query.
    */
-  function defineContext (context) {
+  function defineContext(context) {
     if (typeof context === undefinedString) {
-
       // No context; defaults to document
       return doc;
+    }
 
-    } else if (context instanceof Seht || context.nodeType) {
-
+    if (context instanceof Seht || context.nodeType) {
       // A Seht object or a regular element
       return context;
+    }
 
-    } else if (typeof context === stringString) {
-
+    if (typeof context === stringString) {
       // Context is also a selector
       return query(context, doc);
+    }
 
-    } else if (isFinite(context.length)) {
-
+    if (win.isFinite(context.length)) {
       // Context is an array or array-like object
       return context;
-
     }
 
     // Bad context; defaults to document
@@ -84,27 +83,20 @@
    *
    * @param  {Array|Object} obj     - An array or object
    * @param  {Function}     handler - Function to call for each value
-   * @param  {*}            scope   - Variable to access as "this" in handler
+   * @param  {*}            scope   - Variable to access as 'this' in handler
    * @return {Array|Object} The original array or object
    */
-  function each (obj, handler, scope) {
-    let
-    property;
-
-    if (isFinite(obj.length)) {
+  function each(obj, handler, scope) {
+    if (win.isFinite(obj.length)) {
       // The object looks like an array
-
-      arrayProto.forEach.call(obj, function (value, index) {
+      arrayPrototype.forEach.call(obj, (value, index) => {
         handler.call(scope || value, value, index, obj);
       });
     } else {
       // The object is presumed to be a regular object
-
-      for (property in obj) {
-        if (objectProto.hasOwnProperty.call(obj, property)) {
-          handler.call(scope || obj[property], obj[property], property, obj);
-        }
-      }
+      arrayPrototype.forEach.call(Object.keys(obj), (key) => {
+        handler.call(scope || obj[key], obj[key], key, obj);
+      });
     }
 
     // Return the object for future use
@@ -114,27 +106,25 @@
   /**
    * Find elements based on variables.
    */
-  function find (selector, context) {
+  function find(selector, context) {
     if (selector === null || typeof selector === undefinedString) {
-
       // Nothing to search for, so let's return an empty array
       return [];
+    }
 
-    } else if (selector.nodeType || selector === selector.window) {
-
-      // The selector is an element or "window"
+    if (selector.nodeType || selector === selector.window) {
+      // The selector is an element or 'window'
       return [selector];
+    }
 
-    } else if (typeof selector === "object" && isFinite(selector.length)) {
-
+    if (typeof selector === 'object' && win.isFinite(selector.length)) {
       // The selector is an array
       return selector;
+    }
 
-    } else if (typeof selector === stringString) {
-
+    if (typeof selector === stringString) {
       // The selector is a search query, so let's search for it
       return query(selector, context);
-
     }
 
     // Nothing to search for, so let's return an empty array
@@ -144,7 +134,7 @@
   /**
    * Create HTML elements from a string.
    */
-  function htmlify (string) {
+  function htmlify(string) {
     if (typeof string !== stringString) {
       return string;
     }
@@ -162,15 +152,14 @@
   /**
    * Insert HTML relative to elements' position
    */
-  function insertAdjacentHTML (elements, position, html) {
+  function insertAdjacentHTML(elements, position, html) {
     if (html instanceof Seht) {
-
       // The supplied string is actually a
       // Seht object, so let's flatten it.
       html = html.toString();
     }
 
-    return elements.each(function (element) {
+    return elements.each((element) => {
       element.insertAdjacentHTML(position, html);
     });
   }
@@ -181,52 +170,41 @@
    *
    * @param  {Array|Object} obj     - An array or object
    * @param  {Function}     handler - Function to call for each value
-   * @param  {*}            scope   - Variable to access as "this" in handler
+   * @param  {*}            scope   - Variable to access as 'this' in handler
    * @return {Array}        A new array based on old values and handler-results
    */
-  function map (obj, handler, scope) {
-    return arrayProto.map.call(obj, function (value, index) {
-      return handler.call(scope || value, value, index);
-    });
+  function map(obj, handler, scope) {
+    return arrayPrototype.map.call(obj, (v, i) => handler.call(scope || v, v, i));
   }
 
   /**
    * Search for, or create HTML elements.
    */
-  function query (selector, context) {
-    let
-    ret;
-
+  function query(selector, context) {
     // Define a context for the query
     context = defineContext(context);
 
-    if (isFinite(context.length)) {
+    if (win.isFinite(context.length)) {
       // Multiple contexts, so let's search them all
+      let returnable = [];
 
-      ret = [];
-      each(context, function (ctx) {
-
+      each(context, (ctx) => {
         // Search each context and concatenate
         // the result to a new array
-        ret = ret.concat(toArray(query(selector, ctx)));
-
+        returnable = returnable.concat(toArray(query(selector, ctx)));
       });
 
-      return ret;
+      return returnable;
     }
 
     if (Regex.id.test(selector)) {
-
       // The string matches the regex for an ID-search
       return [context.getElementById(selector.slice(1))];
-
     }
 
     if (Regex.html.test(selector)) {
-
-      // The string matches the regex for HTML, so let's "htmlify" it
+      // The string matches the regex for HTML, so let's 'htmlify' it
       return htmlify(selector);
-
     }
 
     // Default selector search
@@ -239,8 +217,8 @@
    * @param  {Array|Object} obj - An array or object
    * @return {Array}        A new clean array based on the old one
    */
-  function toArray (obj) {
-    return arrayProto.slice.call(obj);
+  function toArray(obj) {
+    return arrayPrototype.slice.call(obj);
   }
 
   /**
@@ -249,17 +227,13 @@
    * @param  {Array|Object} obj - An array or object
    * @return {Array}        A duplicate-free array based on the old one
    */
-  function unique (obj) {
+  function unique(obj) {
     if (obj.length <= 1) {
-
       // It should already be unique, right
       return toArray(obj);
-
     }
 
-    return arrayProto.filter.call(obj, function (value, index, self) {
-      return arrayProto.indexOf.call(self, value) === index;
-    });
+    return arrayPrototype.filter.call(obj, (v, i, s) => arrayPrototype.indexOf.call(s, v) === i);
   }
 
   /**
@@ -267,18 +241,16 @@
    */
 
   /**
-   * Function to call Sehts constructor.
+   * Publicly accessible function to call Sehts constructor.
    *
    * @param  {*=}       selector - Query to search for
-   * @param  {Element=} context  - Item in which we look for "selector"
+   * @param  {Element=} context  - Item in which we look for 'selector'
    * @return {Seht}     An old or new Seht object
    */
-  function seht (selector, context) {
+  function seht(selector, context) {
     if (selector instanceof Seht) {
-
       // The selector is a Seht object, so let's return it as-is
       return selector;
-
     }
 
     // Call the constructor for Seht
@@ -286,16 +258,15 @@
   }
 
   /**
-   * Initiates a Seht object.
+   * Constructor for Seht.
    *
    * @constructor
    * @param  {*}       selector - Query to search for
-   * @param  {Element} context  - Item in which we search for "selector"
+   * @param  {Element} context  - Item in which we search for 'selector'
    * @return {Seht}    A new Seht object
    */
-  function Seht (selector, context) {
-    let
-    elements;
+  function Seht(selector, context) {
+    let elements;
 
     // Find elements
     elements = find(selector, context);
@@ -306,11 +277,9 @@
     // Set length for the current object
     this.length = elements.length;
 
-    each(elements, function (element, index) {
-
+    each(elements, (element, index) => {
       // Add each element to the current object
       this[index] = element;
-
     }, this);
   }
 
@@ -329,11 +298,11 @@
      * @param  {...String} Class names
      * @return {Seht}      The original object
      */
-    addClass () {
+    addClass() {
       const args = arguments;
 
-      return each(this, function (element) {
-        each(args, function (name) {
+      return each(this, (element) => {
+        each(args, (name) => {
           element.classList.add(name);
         });
       });
@@ -345,8 +314,8 @@
      * @param  {String} html - HTML to insert
      * @return {Seht}   The original object
      */
-    after (html) {
-      return insertAdjacentHTML(this, "afterend", html);
+    after(html) {
+      return insertAdjacentHTML(this, 'afterend', html);
     },
 
     /**
@@ -355,8 +324,8 @@
      * @param  {String} html - HTML to append
      * @return {Seht}   The original object
      */
-    append (html) {
-      return insertAdjacentHTML(this, "beforeend", html);
+    append(html) {
+      return insertAdjacentHTML(this, 'beforeend', html);
     },
 
     /**
@@ -365,7 +334,7 @@
      * @param  {*}    selector - Query to search for
      * @return {Seht} The new object
      */
-    appendTo (selector) {
+    appendTo(selector) {
       return seht(selector).append(this);
     },
 
@@ -376,12 +345,14 @@
      * @param  {String=}     value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
-    attr (name, value) {
+    attr(name, value) {
       if (typeof name !== undefinedString && typeof value !== undefinedString) {
-        return each(this, function (element) {
+        return each(this, (element) => {
           element.setAttribute(name, value);
         });
-      } else if (this.length > 0) {
+      }
+
+      if (this.length > 0) {
         return this[0].getAttribute(name);
       }
 
@@ -394,8 +365,8 @@
      * @param  {String} html - HTML to insert
      * @return {Seht}   The original object
      */
-    before (html) {
-      return insertAdjacentHTML(this, "beforebegin", html);
+    before(html) {
+      return insertAdjacentHTML(this, 'beforebegin', html);
     },
 
     /**
@@ -405,23 +376,22 @@
      * @param  {String=}     value - New value for attribute
      * @return {Seht|String} The original object or value of attribute
      */
-    data (name, value) {
+    data(name, value) {
       // Define a proper data name
-      name = typeof name === undefinedString ? null : "data-" + name;
+      name = typeof name === undefinedString ? null : 'data-$name';
 
       if (name && typeof value !== undefinedString) {
-
         // Convert a JS object to a JSON string
         value = JSON.stringify(value);
 
-        return each(this, function (element) {
+        return each(this, (element) => {
           element.setAttribute(name, value);
         });
-      } else if (this.length > 0) {
-        value = this[0].getAttribute(name);
+      }
 
+      if (this.length > 0) {
         // Return a parsed JSON string
-        return JSON.parse(value);
+        return JSON.parse(this[0].getAttribute(name));
       }
 
       return null;
@@ -433,7 +403,7 @@
      * @param  {Function} handler - Handler to call on each element
      * @return {Seht}     The original object
      */
-    each (handler) {
+    each(handler) {
       return each(this, handler);
     },
 
@@ -442,9 +412,9 @@
      *
      * @return {Seht} The original object
      */
-    empty () {
-      return each(this, function (element) {
-        element.innerHTML = "";
+    empty() {
+      return each(this, (element) => {
+        element.innerHTML = '';
       });
     },
 
@@ -455,7 +425,7 @@
      * @param  {Number}    index - Index for element
      * @return {Seht|Null} The new object or null
      */
-    eq (index) {
+    eq(index) {
       return seht(index >= 0 && index < this.length ? this[index] : null);
     },
 
@@ -464,7 +434,7 @@
      *
      * @return {Seht|Null} The new object or null
      */
-    first () {
+    first() {
       return this.eq(0);
     },
 
@@ -474,7 +444,7 @@
      * @param  {String}  string - Class name to verify
      * @return {Boolean}
      */
-    hasClass (string) {
+    hasClass(string) {
       return this[0].classList.contains(string);
     },
 
@@ -484,20 +454,20 @@
      * @param  {String=} string - Optional new HTML for elements
      * @return {Seht}    The original object or element's HTML
      */
-    html (string) {
+    html(string) {
       if (typeof string !== undefinedString) {
         if (string instanceof Seht) {
-
           // The supplied string is actually a
           // Seht object, so let's flatten it.
           string = this.toString();
-
         }
 
-        return each(this, function (element) {
+        return each(this, (element) => {
           element.innerHTML = string;
         });
-      } else if (this.length > 0) {
+      }
+
+      if (this.length > 0) {
         return this[0].innerHTML;
       }
 
@@ -509,7 +479,7 @@
      *
      * @return {Seht|Null} The new object or null
      */
-    last () {
+    last() {
       return this.eq(this.length - 1);
     },
 
@@ -520,7 +490,7 @@
      * @param  {Function} handler - Handler to call on each element
      * @return {Seht}     The new object
      */
-    map (handler) {
+    map(handler) {
       return seht(map(this, handler));
     },
 
@@ -531,8 +501,8 @@
      * @param  {Function} handler - Function to remove for event
      * @return {Seht}     The original object
      */
-    off (type, handler) {
-      return each(this, function (element) {
+    off(type, handler) {
+      return each(this, (element) => {
         element.removeEventListener(type, handler);
       });
     },
@@ -544,8 +514,8 @@
      * @param  {Function} handler - Function to call for event
      * @return {Seht}     The original object
      */
-    on (type, handler) {
-      return each(this, function (element) {
+    on(type, handler) {
+      return each(this, (element) => {
         element.addEventListener(type, handler);
       });
     },
@@ -555,10 +525,8 @@
      *
      * @return {Seht} The new object
      */
-    parent () {
-      return seht(map(this, function (element) {
-        return element.parentNode;
-      }));
+    parent() {
+      return seht(map(this, element => element.parentNode));
     },
 
     /**
@@ -567,8 +535,8 @@
      * @param  {String} html - HTML to prepend
      * @return {Seht}   The original object
      */
-    prepend (html) {
-      return insertAdjacentHTML(this, "afterbegin", html);
+    prepend(html) {
+      return insertAdjacentHTML(this, 'afterbegin', html);
     },
 
     /**
@@ -577,7 +545,7 @@
      * @param  {*}    selector - Query to search for
      * @return {Seht} The new object
      */
-    prependTo (selector) {
+    prependTo(selector) {
       return seht(selector).prepend(this);
     },
 
@@ -587,10 +555,10 @@
      *
      * @return {Seht} The new object
      */
-    remove () {
+    remove() {
       const parents = this.parent();
 
-      each(this, function (element) {
+      each(this, (element) => {
         element.parentNode.removeChild(element);
       });
 
@@ -603,11 +571,11 @@
      * @param  {...String} Class names
      * @return {Seht}      The original object
      */
-    removeClass () {
+    removeClass() {
       const args = arguments;
 
-      return each(this, function (element) {
-        each(args, function (name) {
+      return each(this, (element) => {
+        each(args, (name) => {
           element.classList.remove(name);
         });
       });
@@ -619,12 +587,14 @@
      * @param  {String=}     string - Optional new text for elements
      * @return {Seht|String} The original object or element's text
      */
-    text (string) {
+    text(string) {
       if (typeof string !== undefinedString) {
-        return each(this, function (element) {
+        return each(this, (element) => {
           element.textContent = string;
         });
-      } else if (this.length > 0) {
+      }
+
+      if (this.length > 0) {
         return this[0].textContent;
       }
 
@@ -636,7 +606,7 @@
      *
      * @return {Array} Array of elements
      */
-    toArray () {
+    toArray() {
       return toArray(this);
     },
 
@@ -646,11 +616,11 @@
      * @param  {...String} Class names
      * @return {Seht}      The original object
      */
-    toggleClass () {
+    toggleClass() {
       const args = arguments;
 
-      return each(this, function (element) {
-        each(args, function (name) {
+      return each(this, (element) => {
+        each(args, (name) => {
           element.classList.toggle(name);
         });
       });
@@ -662,11 +632,10 @@
      *
      * @return {String} The combined HTML
      */
-    toString () {
-      let
-      string = "";
+    toString() {
+      let string = '';
 
-      each(this, function (element) {
+      each(this, (element) => {
         string += element.outerHTML;
       });
 
@@ -680,11 +649,10 @@
      * @param  {...String} Event types
      * @return {Seht}      The original object
      */
-    trigger () {
-      // Allow for multiple event types
+    trigger() {
       const args = arguments;
 
-      return each(this, function (element) {
+      return each(this, (element) => {
         Events.trigger(element, args);
       });
     },
@@ -695,28 +663,30 @@
      * @param  {String=} value - Optional new value for elements
      * @return {Seht}    The original object or element's value
      */
-    value (value) {
+    value(value) {
       if (typeof value !== undefinedString) {
-        return each(this, function (element) {
+        return each(this, (element) => {
           element.value = value;
         });
-      } else if (this.length > 0) {
+      }
+
+      if (this.length > 0) {
         return this[0].value;
       }
 
       return null;
-    }
+    },
   };
 
   /**
    * Useful functions to access outside of Seht's core.
    */
 
-  seht.each    = each;
-  seht.map     = map;
-  seht.ready   = Events.ready;
+  seht.each = each;
+  seht.map = map;
+  seht.ready = Events.ready;
   seht.toArray = toArray;
-  seht.unique  = unique;
+  seht.unique = unique;
 
   /**
    * Expose the prototype for easy extension.
