@@ -20,6 +20,8 @@
     "uglify-js": "^3.6.0"
   },
   "files": [
+    "dist/seht.js",
+    "dist/seht.babel.js",
     "dist/seht.min.js"
   ],
   "homepage": "http://git.io/seht",
@@ -29,7 +31,7 @@
     "selector"
   ],
   "license": "MIT",
-  "main": "dist/seht.js",
+  "main": "dist/seht.min.js",
   "name": "seht",
   "repository": {
     "type": "git",
@@ -40,9 +42,9 @@
     "babel:build": "babel dist/seht.js --out-file dist/seht.babel.js",
     "babel:minify": "uglifyjs dist/seht.babel.js -o dist/seht.babel.js -c -m --comments",
     "build": "yarn rollup && ",
-    "minify": "terser dist/seht.js -o dist/seht.min.js -c -m --comments",
+    "minify": "terser dist/seht.js -o dist/seht.min.js -c -m --keep-classnames --comments",
     "rollup": "rollup -c",
     "watch": "rollup -c --watch.chokidar --watch.clearScreen"
   },
-  "version": "0.12.0"
+  "version": "0.12.1"
 }

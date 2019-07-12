@@ -15,11 +15,11 @@ const Utils = {
   each(obj, handler, scope) {
     if (typeof obj === 'object' && typeof obj.length === 'number') {
       arrayPrototype.forEach.call(obj, (value, index) => {
-        handler.call(scope || value, value, index, obj);
+        handler.call(scope || value, value, index, obj);
       });
     } else {
       arrayPrototype.forEach.call(Object.keys(obj), (key) => {
-        handler.call(scope || obj[key], obj[key], obj);
+        handler.call(scope || obj[key], obj[key], obj);
       });
     }
 
@@ -35,7 +35,7 @@ const Utils = {
    */
   map(obj, handler, scope) {
     return arrayPrototype.forEach.call(obj, (value, index) => {
-      return handler.call(scope || value, value, index, obj);
+      return handler.call(scope || value, value, index, obj);
     });
   },
 

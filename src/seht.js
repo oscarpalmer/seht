@@ -66,7 +66,7 @@ class Seht {
    * @return {Seht} The new Seht object
    */
   appendTo(selector) {
-    return seht(selector).append(this);
+    return (new Seht(selector)).append(this);
   }
 
   /**
@@ -151,7 +151,7 @@ class Seht {
    * @return {Seht|Null} The new Seht object or null
    */
   eq(index) {
-    return seht(index >= 0 && index < this.length ? this[index] : null);
+    return (new Seht(index >= 0 && index < this.length ? this[index] : null));
   }
 
   /**
@@ -211,7 +211,7 @@ class Seht {
    * @return {Seht} The new Seht object
    */
   map(handler) {
-    return seht(Utils.map(this, handler));
+    return (new Seht(Utils.map(this, handler)));
   }
 
   /**
@@ -243,7 +243,7 @@ class Seht {
    * @return {Seht} The new Seht object
    */
   parent() {
-    return seht(Utils.map(this, element => element.parentNode));
+    return (new Seht(Utils.map(this, element => element.parentNode)));
   }
 
   /**
@@ -261,7 +261,7 @@ class Seht {
    * @return {Seht} The new Seht object
    */
   prependTo(selector) {
-    return seht(selector).prepend(this);
+    return (new Seht(selector)).prepend(this);
   }
 
   /**

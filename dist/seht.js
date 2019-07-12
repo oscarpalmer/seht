@@ -1,5 +1,5 @@
 /*!
- * Seht, v0.12.0 - a JavaScript library, like jQuery or Zepto!
+ * Seht, v0.12.1 - a JavaScript library, like jQuery or Zepto!
  * https://github.com/oscarpalmer/seht
  * (c) Oscar Palmér, 2019, MIT @license
  */
@@ -36,11 +36,11 @@ const seht = (function () {
     each(obj, handler, scope) {
       if (typeof obj === 'object' && typeof obj.length === 'number') {
         arrayPrototype.forEach.call(obj, (value, index) => {
-          handler.call(scope || value, value, index, obj);
+          handler.call(scope || value, value, index, obj);
         });
       } else {
         arrayPrototype.forEach.call(Object.keys(obj), (key) => {
-          handler.call(scope || obj[key], obj[key], obj);
+          handler.call(scope || obj[key], obj[key], obj);
         });
       }
 
@@ -56,7 +56,7 @@ const seht = (function () {
      */
     map(obj, handler, scope) {
       return arrayPrototype.forEach.call(obj, (value, index) => {
-        return handler.call(scope || value, value, index, obj);
+        return handler.call(scope || value, value, index, obj);
       });
     },
 
@@ -116,7 +116,7 @@ const seht = (function () {
         // Dispatch (trigger) event on element
         element.dispatchEvent(event);
       });
-    }
+    },
   };
 
   /**
@@ -155,8 +155,8 @@ const seht = (function () {
 
     /**
      * Method for finding elements based on a selector and context.
-     * @param {*=} selector 
-     * @param {*=} context 
+     * @param {*=} selector
+     * @param {*=} context
      * @returns {Array} Array of elements
      */
     find(selector, context) {
@@ -321,7 +321,7 @@ const seht = (function () {
      * @return {Seht} The new Seht object
      */
     appendTo(selector) {
-      return seht(selector).append(this);
+      return (new Seht(selector)).append(this);
     }
 
     /**
@@ -406,7 +406,7 @@ const seht = (function () {
      * @return {Seht|Null} The new Seht object or null
      */
     eq(index) {
-      return seht(index >= 0 && index < this.length ? this[index] : null);
+      return (new Seht(index >= 0 && index < this.length ? this[index] : null));
     }
 
     /**
@@ -466,7 +466,7 @@ const seht = (function () {
      * @return {Seht} The new Seht object
      */
     map(handler) {
-      return seht(Utils.map(this, handler));
+      return (new Seht(Utils.map(this, handler)));
     }
 
     /**
@@ -498,7 +498,7 @@ const seht = (function () {
      * @return {Seht} The new Seht object
      */
     parent() {
-      return seht(Utils.map(this, element => element.parentNode));
+      return (new Seht(Utils.map(this, element => element.parentNode)));
     }
 
     /**
@@ -516,7 +516,7 @@ const seht = (function () {
      * @return {Seht} The new Seht object
      */
     prependTo(selector) {
-      return seht(selector).prepend(this);
+      return (new Seht(selector)).prepend(this);
     }
 
     /**
@@ -634,7 +634,13 @@ const seht = (function () {
     }
   }
 
-  const seht$1 = (selector, context) => {
+  /**
+   * Method for creating a new instance of Seht.
+   * @param {*=} selector
+   * @param {*=} context
+   * @returns {Seht} A new Seht object
+   */
+  const seht = (selector, context) => {
     if (selector instanceof Seht) {
       return selector;
     }
@@ -642,12 +648,17 @@ const seht = (function () {
     return new Seht(selector, context);
   };
 
-  seht$1.each = Utils.each;
-  seht$1.map = Utils.map;
-  seht$1.ready = Events.ready;
-  seht$1.toArray = Utils.toArray;
-  seht$1.unique = Utils.unique;
+  // Expose useful event and utility methods for outside use
+  seht.each = Utils.each;
+  seht.map = Utils.map;
+  seht.ready = Events.ready;
+  seht.toArray = Utils.toArray;
+  seht.unique = Utils.unique;
 
-  return seht$1;
+  if (typeof win.$ === 'undefined') {
+    win.$ = seht;
+  }
+
+  return seht;
 
 }());

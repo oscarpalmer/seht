@@ -1,5 +1,5 @@
-import { doc, regexes } from './consts';
 import Utils from './utils';
+import { doc, regexes } from './consts';
 
 /**
  * Collection of DOM-related methods.
@@ -37,8 +37,8 @@ const DOM = {
 
   /**
    * Method for finding elements based on a selector and context.
-   * @param {*=} selector 
-   * @param {*=} context 
+   * @param {*=} selector
+   * @param {*=} context
    * @returns {Array} Array of elements
    */
   find(selector, context) {

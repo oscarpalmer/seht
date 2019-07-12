@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   'env': {
     'browser': true,
     'es6': true
@@ -13,6 +13,7 @@ export default {
     'sourceType': 'module'
   },
   'rules': {
+    'arrow-body-style': 0,
     'dot-notation': 0,
     'no-nested-ternary': 0,
     'no-param-reassign': 0,

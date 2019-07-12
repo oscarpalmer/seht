@@ -1,6 +1,7 @@
 import Events from './events';
 import Utils from './utils';
 import Seht from './seht';
+import { win } from './consts';
 
 /**
  * Method for creating a new instance of Seht.
@@ -22,6 +23,11 @@ seht.map = Utils.map;
 seht.ready = Events.ready;
 seht.toArray = Utils.toArray;
 seht.unique = Utils.unique;
+
+// Export a jQuery-like method when possible
+if (typeof win.$ === 'undefined') {
+  win.$ = seht;
+}
 
 // Export method
 export default seht;

@@ -1,5 +1,5 @@
-import { doc } from './consts';
 import Utils from './utils';
+import { doc } from './consts';
 
 /**
  * Collection of event-related methods.
@@ -31,7 +31,7 @@ const Events = {
       // Dispatch (trigger) event on element
       element.dispatchEvent(event);
     });
-  }
+  },
 };
 
 // Export collection of methods
