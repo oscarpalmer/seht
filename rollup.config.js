@@ -9,7 +9,7 @@ const header = [
 ];
 
 module.exports = {
-  input: './src/seht.js',
+  input: './src/index.js',
   output: {
     banner: header.join('\n'),
     file: './dist/seht.js',
