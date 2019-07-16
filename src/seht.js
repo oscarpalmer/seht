@@ -8,8 +8,8 @@ import Utils from './utils';
 class Seht {
   /**
    * Constructor for Seht.
-   * @param {*=} selector
-   * @param {*=} context
+   * @param {*=} selector Selector for elements
+   * @param {*=} context Context of elements
    */
   constructor(selector, context) {
     let elements;
@@ -31,7 +31,7 @@ class Seht {
 
   /**
    * Method for adding class names to elements.
-   * @param {...String} classNames
+   * @param {...String} classNames Comma separated strings representing class names
    * @return {Seht} The original Seht object
    */
   addClass(...classNames) {
@@ -44,7 +44,7 @@ class Seht {
 
   /**
    * Method for inserting HTML content after elements.
-   * @param {Seht|String} html
+   * @param {Seht|String} html HTML content to insert
    * @return {Seht} The original Seht object
    */
   after(html) {
@@ -53,7 +53,7 @@ class Seht {
 
   /**
    * Method for appending HTML content to elements.
-   * @param {Seht|String} html
+   * @param {Seht|String} html HTML content to insert
    * @return {Seht} The original Seht object
    */
   append(html) {
@@ -62,36 +62,40 @@ class Seht {
 
   /**
    * Method for appending a Seht object to a selector.
-   * @param {*=} selector
-   * @return {Seht} The new Seht object
+   * @param {*} selector Selector for elements to append to
+   * @param {*=} context Context of elements
+   * @return {Seht} A new Seht object
    */
-  appendTo(selector) {
-    return (new Seht(selector)).append(this);
+  appendTo(selector, context) {
+    return (new Seht(selector, context)).append(this);
   }
 
   /**
    * Method for retrieving or setting attributes for elements.
-   * @param {String} name
-   * @param {String=} value
+   * @param {String} name Name of attribute
+   * @param {String=} value Value for attribute
    * @return {Seht|String} The original Seht object or value of attribute
    */
   attr(name, value) {
-    if (typeof name !== 'undefined' && typeof value !== 'undefined') {
+    // Set or unset an attribute with 'name' and 'value'
+    if (name != null && value !== undefined && this.length > 0) {
       return Utils.each(this, (element) => {
-        element.setAttribute(name, value);
+        DOM.setAttribute(element, name, value);
       });
     }
 
-    if (this.length > 0) {
+    // Return value for attribute in element
+    if (name != null && this.length > 0) {
       return this[0].getAttribute(name);
     }
 
+    // No parameters; return nothing
     return null;
   }
 
   /**
    * Method for inserting HTML content before elements.
-   * @param {String} html
+   * @param {String} html HTML content to insert
    * @return {Seht} The original Seht object
    */
   before(html) {
@@ -100,38 +104,41 @@ class Seht {
 
   /**
    * Method for retrieving or setting data-attributes for elements.
-   * @param {String} name
-   * @param {String=} value
+   * @param {String} name Name of attribute
+   * @param {String=} value Value for attribute
    * @return {Seht|String} The original Seht object or value of attribute
    */
   data(name, value) {
-    // Define a proper data name
-    name = typeof name === 'undefined' ? null : `data-${name}`;
+    // Define a proper data-name
+    const atttribute = name == null ? name : `data-${name}`;
 
-    if (name && typeof value !== 'undefined') {
+    // Set or unset an attribute with 'name' and 'value'
+    if (atttribute != null && value !== undefined && this.length > 0) {
       // Convert a JS object to a JSON string
-      value = JSON.stringify(value);
+      const json = JSON.stringify(value);
 
       return Utils.each(this, (element) => {
-        element.setAttribute(name, value);
+        DOM.setAttribute(element, atttribute, json);
       });
     }
 
-    if (this.length > 0) {
+    // Return value for attribute in element
+    if (atttribute && this.length > 0) {
       // Return a parsed JSON string
-      return JSON.parse(this[0].getAttribute(name));
+      return JSON.parse(this[0].getAttribute(atttribute));
     }
 
+    // No parameters; return nothing
     return null;
   }
 
   /**
-   * Method for calling a handler for each element in the Seht object.
-   * @param {Function} handler
+   * Method for calling a callback for each element in the Seht object.
+   * @param {Function} callback Function to call for each item
    * @return {Seht} The original Seht object
    */
-  each(handler) {
-    return Utils.each(this, handler);
+  each(callback) {
+    return Utils.each(this, callback);
   }
 
   /**
@@ -140,115 +147,149 @@ class Seht {
    */
   empty() {
     return Utils.each(this, (element) => {
-      element.innerHTML = '';
+      const el = element;
+
+      el.innerHTML = '';
     });
   }
 
   /**
    * Method for creating a new Seht object containing
    * only the element at a specific position.
-   * @param {Number} index
-   * @return {Seht|Null} The new Seht object or null
+   * @param {Number} index Numerical value representing a position in Seht object
+   * @return {Seht|Null} A new Seht object or null
    */
   eq(index) {
-    return (new Seht(index >= 0 && index < this.length ? this[index] : null));
+    // Return Seht object with single element matching index when possible, or nothing
+    if (index != null && typeof index === 'number') {
+      return index >= 0 && index < this.length ? new Seht(this[index]) : null;
+    }
+
+    // No match; return nothing
+    return null;
   }
 
   /**
    * Method for creating a new Seht object containing only the first element.
-   * @return {Seht|Null} The new Seht object or null
+   * @return {Seht|Null} A new Seht object or null
    */
   first() {
     return this.eq(0);
   }
 
   /**
+   * Method for retrieving an element at a specific position.
+   * @param {Number} index Numerical value representing a position in Seht object
+   * @return {Element|Null} A found element or null
+   */
+  get(index) {
+    // Return single element matching index when possible, or nothing
+    if (index != null && typeof index === 'number') {
+      return index >= 0 && index < this.length ? this[index] : null;
+    }
+
+    // No match; return nothing
+    return null;
+  }
+
+  /**
    * Method for verifying if an element has a specific class name.
-   * @param {String} string
+   * @param {String} string Name of class to check for
    * @return {Boolean}
    */
-  hasClass(string) {
-    return this[0].classList.contains(string);
+  hasClass(name) {
+    // Class name is not empty, is a string, and Seht object has at least one element
+    if (name != null && typeof name === 'string' && this.length > 0) {
+      // Return value of 'contains'-call on 'classList'
+      return this[0].classList.contains(name);
+    }
+
+    // Nothing to check; return nothing
+    return null;
   }
 
   /**
    * Metho for retrieving or setting the HTML for elements.
-   * @param {String=} string
+   * @param {String=} value HTML content to insert
    * @return {Seht} The original Seht object or the first element's HTML
    */
-  html(string) {
-    if (typeof string !== 'undefined') {
-      if (string instanceof Seht) {
-        // The supplied string is actually a
-        // Seht object, so let's flatten it.
-        string = this.toString();
-      }
+  html(value) {
+    // Set HTML content with value
+    if (value != null) {
+      // Cast parameter to a string value if needed
+      const html = typeof value === 'string' ? value : `${value}`;
 
       return Utils.each(this, (element) => {
-        element.innerHTML = string;
+        const el = element;
+
+        el.innerHTML = html;
       });
     }
 
+    // Return HTML content of first element if possible
     if (this.length > 0) {
       return this[0].innerHTML;
     }
 
+    // No value to set or retrieve; return nothing
     return null;
   }
 
   /**
    * Method for creating a new Seht object containing only the last element.
-   * @return {Seht|Null} The new Seht object or null
+   * @return {Seht|Null} A new Seht object or null
    */
   last() {
-    return this.eq(this.length);
+    return this.eq(this.length - 1);
   }
 
   /**
    * Method for creating a new Seht object based on
-   * results from handlers called on old elements.
-   * @param {Function} handler
-   * @return {Seht} The new Seht object
+   * results from callbacks called on old elements.
+   * @param {Function} callback Function to call for each item
+   * @return {Seht} A new Seht object
    */
-  map(handler) {
-    return (new Seht(Utils.map(this, handler)));
+  map(callback) {
+    return new Seht(Utils.map(this, callback));
   }
 
   /**
-   * Method for removing an event handler from elements.
-   * @param {String} type
-   * @param {Function} handler
+   * Method for removing an event callback from elements.
+   * @param {String} type Name of event type
+   * @param {Function} callback Function to call for event
+   * @param {Boolean=} capture True or false; must match value of previous 'on'-call
    * @return {Seht} The original Seht object
    */
-  off(type, handler) {
+  off(type, callback, capture) {
     return Utils.each(this, (element) => {
-      element.removeEventListener(type, handler);
+      element.removeEventListener(type, callback, capture || false);
     });
   }
 
   /**
-   * Method for adding an event handler to elements.
-   * @param {String} type
-   * @param {Function} handler
+   * Method for adding an event callback to elements.
+   * @param {String} type Name of event type
+   * @param {Function} callback Function to call for event
+   * @param {Boolean=} capture True or false to capture this event callback before others
    * @return {Seht} The original Seht object
    */
-  on(type, handler) {
+  on(type, callback, capture) {
     return Utils.each(this, (element) => {
-      element.addEventListener(type, handler);
+      element.addEventListener(type, callback, capture || false);
     });
   }
 
   /**
    * Method for creating a new Seht object based on elements' parents.
-   * @return {Seht} The new Seht object
+   * @return {Seht} A new Seht object
    */
   parent() {
-    return (new Seht(Utils.map(this, element => element.parentNode)));
+    return this.map(element => element.parentNode);
   }
 
   /**
    * Method for prepending HTML content to elements.
-   * @param {String} html
+   * @param {String} html HTML content to insert
    * @return {Seht} The original Seht object
    */
   prepend(html) {
@@ -257,31 +298,30 @@ class Seht {
 
   /**
    * Method for prepending a Seht object to a selector.
-   * @param {*} selector
-   * @return {Seht} The new Seht object
+   * @param {*} selector Selector for elements to prepend to
+   * @param {*=} context Context of elements
+   * @return {Seht} A new Seht object
    */
-  prependTo(selector) {
-    return (new Seht(selector)).prepend(this);
+  prependTo(selector, context) {
+    return (new Seht(selector, context)).prepend(this);
   }
 
   /**
    * Method for removing elements from its context;
    * returns their parents in a new Seht object.
-   * @return {Seht} The new Seht object
+   * @return {Seht} A new Seht object
    */
   remove() {
-    const parents = this.parent();
-
-    Utils.each(this, (element) => {
-      element.parentNode.removeChild(element);
+    return this.each((element) => {
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
     });
-
-    return parents;
   }
 
   /**
    * Method for removing class names from elements.
-   * @param {...String} classNames
+   * @param {...String} classNames Comma separated strings representing class names
    * @return {Seht} The original Seht object
    */
   removeClass(...classNames) {
@@ -294,20 +334,28 @@ class Seht {
 
   /**
    * Method for retrieving or setting the text for elements.
-   * @param {String=} string
+   * @param {String=} value String to insert
    * @return {Seht|String} The original Seht object or the first element's text content
    */
-  text(string) {
-    if (typeof string !== 'undefined') {
+  text(value) {
+    // Set text content with value
+    if (value != null) {
+      // Cast parameter to a string value if needed
+      const text = typeof value === 'string' ? value : `${value}`;
+
       return Utils.each(this, (element) => {
-        element.textContent = string;
+        const el = element;
+
+        el.textContent = text;
       });
     }
 
+    // Return text content of first element if possible
     if (this.length > 0) {
       return this[0].textContent;
     }
 
+    // No value to set or retrieve; return nothing
     return null;
   }
 
@@ -321,7 +369,7 @@ class Seht {
 
   /**
    * Method for toggling class names for elements.
-   * @param {...String} classNames
+   * @param {...String} classNames Comma separated strings representing class names
    * @return {Seht} The original Seht object
    */
   toggleClass(...classNames) {
@@ -338,19 +386,13 @@ class Seht {
    * @return {String} The combined HTML content
    */
   toString() {
-    let string = '';
-
-    Utils.each(this, (element) => {
-      string += element.outerHTML;
-    });
-
-    return string;
+    return Utils.map(this, element => element.outerHTML).join();
   }
 
   /**
    * Method for triggering events for
    * each element in the Seht object.
-   * @param {...String} events
+   * @param {...String} events Comma separated strings representing event types
    * @return {Seht} The original Seht object
    */
   trigger(...events) {
@@ -361,20 +403,28 @@ class Seht {
 
   /**
    * Method for retrieving or setting the value for an element.
-   * @param {String=} value
+   * @param {String=} value Value to insert
    * @return {Seht} The original Seht object or the first element's value
    */
   value(value) {
-    if (typeof value !== 'undefined') {
+    // Set value property with value
+    if (value != null) {
+      // Cast parameter to a string value if needed
+      const val = typeof value === 'string' ? value : `${value}`;
+
       return Utils.each(this, (element) => {
-        element.value = value;
+        const el = element;
+
+        el.value = val;
       });
     }
 
+    // Return value of first element if possible
     if (this.length > 0) {
       return this[0].value;
     }
 
+    // No value to set or retrieve; return nothing
     return null;
   }
 }

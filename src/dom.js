@@ -7,17 +7,17 @@ import { doc, regexes } from './consts';
 const DOM = {
   /**
    * Method for defining the context of a search query.
-   * @param {*=} context
+   * @param {*=} context Context to be defined
    * @returns {Array|Element|Seht} Seht, a single element or an array of elements
    */
   defineContext(context) {
     // No context; defaults to document
-    if (typeof context === 'undefined') {
+    if (context == null || context === '') {
       return doc;
     }
 
-    // Context is an element
-    if (context.nodeType) {
+    // Context is an element or is an array or array-like object
+    if (context.nodeType || Utils.isArrayLike(context)) {
       return context;
     }
 
@@ -26,24 +26,19 @@ const DOM = {
       return DOM.query(context, doc);
     }
 
-    // Context is an array or array-like object
-    if (typeof context === 'object' && typeof context.length === 'number') {
-      return context;
-    }
-
     // Bad context; defaults to document
     return doc;
   },
 
   /**
    * Method for finding elements based on a selector and context.
-   * @param {*=} selector
-   * @param {*=} context
+   * @param {*=} selector Selector to find
+   * @param {*=} context Context to find selector within
    * @returns {Array} Array of elements
    */
   find(selector, context) {
     // Nothing to search for, so let's return an empty array
-    if (selector === null || typeof selector === 'undefined') {
+    if (selector == null || selector === '') {
       return [];
     }
 
@@ -53,7 +48,7 @@ const DOM = {
     }
 
     // The selector is an array
-    if (typeof selector === 'object' && typeof selector.length === 'number') {
+    if (Utils.isArrayLike(selector)) {
       return selector;
     }
 
@@ -68,7 +63,7 @@ const DOM = {
 
   /**
    * Method for creating HTML elements based on a string.
-   * @param {String} string
+   * @param {String} string String to convert to HTML elements
    * @returns {Array} Array of elements
    */
   htmlify(string) {
@@ -77,56 +72,57 @@ const DOM = {
       return [];
     }
 
-    // Create a new HTML document,
+    // Create a new HTML document…
     const html = doc.implementation.createHTMLDocument();
 
-    // and set its content to the value of the supplied string
+    // … and set its content to the value of the parameter
     html.body.innerHTML = string;
 
-    // Return the bodys child elements
+    // Return the body's child elements
     return html.body.children;
   },
 
   /**
    * Method for inserting HTML content relative to elements' position.
-   * @param {Seht} elements
-   * @param {String} position
-   * @param {Seht|String} html
+   * @param {Seht} elements Seht object of elements
+   * @param {String} position Position for HTML content
+   * @param {Seht|String} html HTML content to insert
    * @returns {Seht} The original Seht object
    */
   insertAdjacentHTML(elements, position, html) {
-    html = html.toString() || html;
+    // Cast parameter to a string value if needed
+    const value = typeof html === 'string' ? html : `${html}`;
 
     return Utils.each(elements, (element) => {
-      element.insertAdjacentHTML(position, html);
+      element.insertAdjacentHTML(position, value);
     });
   },
 
   /**
    * Method for finding elements based on a search query and context.
-   * @param {String} selector
-   * @param {*} context
+   * @param {String} selector Selector to search for
+   * @param {*} context Context to search within
    * @returns {Array} Array of elements
    */
   query(selector, context) {
     // Define a context for the query
-    context = DOM.defineContext(context);
+    const definedContext = DOM.defineContext(context);
 
     // Multiple contexts, so let's search them all
-    if (typeof context === 'object' && typeof context.length === 'number') {
+    if (Utils.isArrayLike(definedContext)) {
       let returnable = [];
 
-      Utils.each(context, (ctx) => {
-        // Search each context and concatenate the result to a new array
+      Utils.each(definedContext, (ctx) => {
+        // Search each context and concatenate the result to the new array
         returnable = returnable.concat(Utils.toArray(DOM.query(selector, ctx)));
       });
 
       return returnable;
     }
 
-    if (regexes.id.test(selector)) {
+    if (regexes.id.test(selector) && definedContext.getElementById) {
       // The string matches the regex for an ID-search
-      return [context.getElementById(selector.slice(1))];
+      return [definedContext.getElementById(selector.slice(1))];
     }
 
     if (regexes.html.test(selector)) {
@@ -135,7 +131,21 @@ const DOM = {
     }
 
     // Default selector search
-    return context.querySelectorAll(selector);
+    return definedContext.querySelectorAll(selector);
+  },
+
+  /**
+   * Method for setting or removing a value for an attribute on an element.
+   * @param {Element} element Element to set or unset attribute for
+   * @param {String} name Name of attribute
+   * @param {String=} value Value for attribute
+   */
+  setAttribute(element, name, value) {
+    if (value != null) {
+      element.setAttribute(name, value);
+    } else {
+      element.removeAttribute(name);
+    }
   },
 };
 

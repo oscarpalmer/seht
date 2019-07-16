@@ -12,12 +12,5 @@ module.exports = {
     'ecmaVersion': 2018,
     'sourceType': 'module'
   },
-  'rules': {
-    'arrow-body-style': 0,
-    'dot-notation': 0,
-    'no-nested-ternary': 0,
-    'no-param-reassign': 0,
-    'no-use-before-define': 0,
-    'quote-props': 0
-  }
+  'rules': {}
 };

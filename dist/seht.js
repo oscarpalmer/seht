@@ -1,5 +1,5 @@
 /*!
- * Seht, v0.12.1 - a JavaScript library, like jQuery or Zepto!
+ * Seht, v0.13.0 - a JavaScript library, like jQuery or Zepto!
  * https://github.com/oscarpalmer/seht
  * (c) Oscar Palmér, 2019, MIT @license
  */
@@ -26,63 +26,108 @@ const seht = (function () {
    */
   const Utils = {
     /**
-     * Method for looping through arrays and object
-     * with a callback for each element within.
-     * @param {Array|Object} obj
-     * @param {Function} handler
-     * @param {*} scope
+     * Method for looping through arrays, array-like objects,
+     * and object with a callback for each item or property within.
+     * @param {Array|Object} obj Object to loop within
+     * @param {Function} callback Callback for loop
+     * @param {*=} scope Scope of callback, i.e. 'this'
      * @returns {Array|Object} The original array or object
      */
-    each(obj, handler, scope) {
-      if (typeof obj === 'object' && typeof obj.length === 'number') {
-        arrayPrototype.forEach.call(obj, (value, index) => {
-          handler.call(scope || value, value, index, obj);
-        });
-      } else {
-        arrayPrototype.forEach.call(Object.keys(obj), (key) => {
-          handler.call(scope || obj[key], obj[key], obj);
+    each(obj, callback, scope) {
+      if (Utils.isArrayLike(obj)) {
+        // Object is an array or like an array
+        arrayPrototype.forEach.call(obj, callback, scope);
+      } else if (typeof obj === 'object') {
+        // Object is a regular object
+        Object.keys(obj).forEach((key) => {
+          callback.call(scope || obj[key], obj[key], key, obj);
         });
       }
 
+      // Return original array, array-like object, or object
       return obj;
     },
 
     /**
-     * Method for remapping an array or object based on a callback.
-     * @param {Array|Object} obj
-     * @param {Function} handler
-     * @param {*} scope
-     * @returns {Array|Object} The original array or object
+     * Method for verifying if an object is or is like an array.
+     * @param {*} obj Object to verify
+     * @returns {Boolean} True if it is or is like an array
      */
-    map(obj, handler, scope) {
-      return arrayPrototype.forEach.call(obj, (value, index) => {
-        return handler.call(scope || value, value, index, obj);
-      });
+    isArrayLike(obj) {
+      // Obvious types that are not arrays or like arrays
+      if (obj == null || obj === obj.window || typeof obj !== 'object') {
+        return false;
+      }
+
+      // Get the lenght of the array or array-like object
+      const length = 'length' in obj && obj.length;
+
+      return typeof length === 'number' // Valid length
+          && (length === 0 // Empty array or array-like object
+            || (length > 0 // Array or array-like object has length…
+            && (length - 1) in obj)); // … and its last item exists
     },
 
     /**
-     * Method for converting an array-like object to an array.
-     * @param {Object} obj
+     * Method for remapping an array, array-like object,
+     * or object based on a callback.
+     * @param {Array|Object} obj Object to map values for
+     * @param {Function} callback Callback for mapping
+     * @param {*=} scope Scope of callback, i.e. 'this'
+     * @returns {Array|Object} The original array or object
+     */
+    map(obj, callback, scope) {
+      // Object is an array or like an array
+      if (Utils.isArrayLike(obj)) {
+        // Call the built-in map function with the callback and return the result
+        return arrayPrototype.map.call(obj, callback, scope);
+      }
+
+      // Object is a regular object
+      if (obj && typeof obj === 'object') {
+        // Create a return object from previous object
+        const returnObject = obj;
+        // Loop through the object and overwrite keys with result of callback
+        Object.keys(obj).forEach((key) => {
+          returnObject[key] = callback.call(scope || obj[key], obj[key], key, obj);
+        });
+      }
+
+      // Return array-like object or object
+      return obj;
+    },
+
+    /**
+     * Method for converting an array-like object or strings to an array.
+     * @param {Object|String} obj Object to convert
      * @returns {Array} New array
      */
     toArray(obj) {
-      return arrayPrototype.slice.call(obj);
+      return typeof obj === 'string' || Utils.isArrayLike(obj)
+        ? arrayPrototype.slice.call(obj) // Possible to convert to array
+        : []; // Not possible; return empty array
     },
 
     /**
-     * Method for removing duplicates in an array.
-     * @param {Array} array
-     * @returns {Array} A duplicate-free array
+     * Method for removing duplicates in an array or array-like object.
+     * @param {Array|Object} obj Object to remove duplicates for
+     * @returns {Array} A duplicate-free array or the original object
      */
-    unique(array) {
-      // Return the original array if it is unable to contain duplicates
-      if (array.length <= 1) {
-        return array;
+    unique(obj) {
+      // Only filter through arrays or array-like objects
+      if (typeof obj === 'string' || Utils.isArrayLike(obj)) {
+        // Return the original array if it is unable to contain duplicates
+        if (obj.length <= 1) {
+          return obj;
+        }
+
+        // Filter through array or array-like object and
+        // check for each item's existence in new array
+        return arrayPrototype.filter.call(obj, (v, i) => arrayPrototype.indexOf.call(obj, v) === i);
       }
 
-      return arrayPrototype.filter.call(array, (value, index, original) => {
-        return arrayPrototype.indexOf.call(original, value) === index;
-      });
+      // Nothing to filter through; return empty array
+      return [];
     },
   };
 
@@ -92,26 +137,27 @@ const seht = (function () {
   const Events = {
     /**
      * Method for adding a callback for when the DOM has loaded.
-     * @param {Function} handler
+     * @param {Function} callback Function to call when document is ready
+     * @param {Boolean=} capture True or false to capture this event callback before others
      */
-    ready(handler) {
-      doc.addEventListener('DOMContentLoaded', handler);
+    ready(callback, capture) {
+      doc.addEventListener('DOMContentLoaded', callback, capture || false);
     },
 
     /**
      * Method for triggering events on an element.
-     * @param {Element} element
-     * @param {Array} types
+     * @param {Element} element Element on which to trigger events
+     * @param {Array} types Array of strings representing event names
      */
     trigger(element, types) {
       let event;
 
       Utils.each(types, (type) => {
         // Create custom event
-        event = doc.createEvent('CustomEvent');
+        event = doc.createEvent('Event');
 
         // Set properties of custom event
-        event.initCustomEvent(type, true, true);
+        event.initEvent(type, true, true);
 
         // Dispatch (trigger) event on element
         element.dispatchEvent(event);
@@ -125,17 +171,17 @@ const seht = (function () {
   const DOM = {
     /**
      * Method for defining the context of a search query.
-     * @param {*=} context
+     * @param {*=} context Context to be defined
      * @returns {Array|Element|Seht} Seht, a single element or an array of elements
      */
     defineContext(context) {
       // No context; defaults to document
-      if (typeof context === 'undefined') {
+      if (context == null || context === '') {
         return doc;
       }
 
-      // Context is an element
-      if (context.nodeType) {
+      // Context is an element or is an array or array-like object
+      if (context.nodeType || Utils.isArrayLike(context)) {
         return context;
       }
 
@@ -144,24 +190,19 @@ const seht = (function () {
         return DOM.query(context, doc);
       }
 
-      // Context is an array or array-like object
-      if (typeof context === 'object' && typeof context.length === 'number') {
-        return context;
-      }
-
       // Bad context; defaults to document
       return doc;
     },
 
     /**
      * Method for finding elements based on a selector and context.
-     * @param {*=} selector
-     * @param {*=} context
+     * @param {*=} selector Selector to find
+     * @param {*=} context Context to find selector within
      * @returns {Array} Array of elements
      */
     find(selector, context) {
       // Nothing to search for, so let's return an empty array
-      if (selector === null || typeof selector === 'undefined') {
+      if (selector == null || selector === '') {
         return [];
       }
 
@@ -171,7 +212,7 @@ const seht = (function () {
       }
 
       // The selector is an array
-      if (typeof selector === 'object' && typeof selector.length === 'number') {
+      if (Utils.isArrayLike(selector)) {
         return selector;
       }
 
@@ -186,7 +227,7 @@ const seht = (function () {
 
     /**
      * Method for creating HTML elements based on a string.
-     * @param {String} string
+     * @param {String} string String to convert to HTML elements
      * @returns {Array} Array of elements
      */
     htmlify(string) {
@@ -195,56 +236,57 @@ const seht = (function () {
         return [];
       }
 
-      // Create a new HTML document,
+      // Create a new HTML document…
       const html = doc.implementation.createHTMLDocument();
 
-      // and set its content to the value of the supplied string
+      // … and set its content to the value of the parameter
       html.body.innerHTML = string;
 
-      // Return the bodys child elements
+      // Return the body's child elements
       return html.body.children;
     },
 
     /**
      * Method for inserting HTML content relative to elements' position.
-     * @param {Seht} elements
-     * @param {String} position
-     * @param {Seht|String} html
+     * @param {Seht} elements Seht object of elements
+     * @param {String} position Position for HTML content
+     * @param {Seht|String} html HTML content to insert
      * @returns {Seht} The original Seht object
      */
     insertAdjacentHTML(elements, position, html) {
-      html = html.toString() || html;
+      // Cast parameter to a string value if needed
+      const value = typeof html === 'string' ? html : `${html}`;
 
       return Utils.each(elements, (element) => {
-        element.insertAdjacentHTML(position, html);
+        element.insertAdjacentHTML(position, value);
       });
     },
 
     /**
      * Method for finding elements based on a search query and context.
-     * @param {String} selector
-     * @param {*} context
+     * @param {String} selector Selector to search for
+     * @param {*} context Context to search within
      * @returns {Array} Array of elements
      */
     query(selector, context) {
       // Define a context for the query
-      context = DOM.defineContext(context);
+      const definedContext = DOM.defineContext(context);
 
       // Multiple contexts, so let's search them all
-      if (typeof context === 'object' && typeof context.length === 'number') {
+      if (Utils.isArrayLike(definedContext)) {
         let returnable = [];
 
-        Utils.each(context, (ctx) => {
-          // Search each context and concatenate the result to a new array
+        Utils.each(definedContext, (ctx) => {
+          // Search each context and concatenate the result to the new array
           returnable = returnable.concat(Utils.toArray(DOM.query(selector, ctx)));
         });
 
         return returnable;
       }
 
-      if (regexes.id.test(selector)) {
+      if (regexes.id.test(selector) && definedContext.getElementById) {
         // The string matches the regex for an ID-search
-        return [context.getElementById(selector.slice(1))];
+        return [definedContext.getElementById(selector.slice(1))];
       }
 
       if (regexes.html.test(selector)) {
@@ -253,7 +295,21 @@ const seht = (function () {
       }
 
       // Default selector search
-      return context.querySelectorAll(selector);
+      return definedContext.querySelectorAll(selector);
+    },
+
+    /**
+     * Method for setting or removing a value for an attribute on an element.
+     * @param {Element} element Element to set or unset attribute for
+     * @param {String} name Name of attribute
+     * @param {String=} value Value for attribute
+     */
+    setAttribute(element, name, value) {
+      if (value != null) {
+        element.setAttribute(name, value);
+      } else {
+        element.removeAttribute(name);
+      }
     },
   };
 
@@ -263,8 +319,8 @@ const seht = (function () {
   class Seht {
     /**
      * Constructor for Seht.
-     * @param {*=} selector
-     * @param {*=} context
+     * @param {*=} selector Selector for elements
+     * @param {*=} context Context of elements
      */
     constructor(selector, context) {
       let elements;
@@ -286,7 +342,7 @@ const seht = (function () {
 
     /**
      * Method for adding class names to elements.
-     * @param {...String} classNames
+     * @param {...String} classNames Comma separated strings representing class names
      * @return {Seht} The original Seht object
      */
     addClass(...classNames) {
@@ -299,7 +355,7 @@ const seht = (function () {
 
     /**
      * Method for inserting HTML content after elements.
-     * @param {Seht|String} html
+     * @param {Seht|String} html HTML content to insert
      * @return {Seht} The original Seht object
      */
     after(html) {
@@ -308,7 +364,7 @@ const seht = (function () {
 
     /**
      * Method for appending HTML content to elements.
-     * @param {Seht|String} html
+     * @param {Seht|String} html HTML content to insert
      * @return {Seht} The original Seht object
      */
     append(html) {
@@ -317,36 +373,40 @@ const seht = (function () {
 
     /**
      * Method for appending a Seht object to a selector.
-     * @param {*=} selector
-     * @return {Seht} The new Seht object
+     * @param {*} selector Selector for elements to append to
+     * @param {*=} context Context of elements
+     * @return {Seht} A new Seht object
      */
-    appendTo(selector) {
-      return (new Seht(selector)).append(this);
+    appendTo(selector, context) {
+      return (new Seht(selector, context)).append(this);
     }
 
     /**
      * Method for retrieving or setting attributes for elements.
-     * @param {String} name
-     * @param {String=} value
+     * @param {String} name Name of attribute
+     * @param {String=} value Value for attribute
      * @return {Seht|String} The original Seht object or value of attribute
      */
     attr(name, value) {
-      if (typeof name !== 'undefined' && typeof value !== 'undefined') {
+      // Set or unset an attribute with 'name' and 'value'
+      if (name != null && value !== undefined && this.length > 0) {
         return Utils.each(this, (element) => {
-          element.setAttribute(name, value);
+          DOM.setAttribute(element, name, value);
         });
       }
 
-      if (this.length > 0) {
+      // Return value for attribute in element
+      if (name != null && this.length > 0) {
         return this[0].getAttribute(name);
       }
 
+      // No parameters; return nothing
       return null;
     }
 
     /**
      * Method for inserting HTML content before elements.
-     * @param {String} html
+     * @param {String} html HTML content to insert
      * @return {Seht} The original Seht object
      */
     before(html) {
@@ -355,38 +415,41 @@ const seht = (function () {
 
     /**
      * Method for retrieving or setting data-attributes for elements.
-     * @param {String} name
-     * @param {String=} value
+     * @param {String} name Name of attribute
+     * @param {String=} value Value for attribute
      * @return {Seht|String} The original Seht object or value of attribute
      */
     data(name, value) {
-      // Define a proper data name
-      name = typeof name === 'undefined' ? null : `data-${name}`;
+      // Define a proper data-name
+      const atttribute = name == null ? name : `data-${name}`;
 
-      if (name && typeof value !== 'undefined') {
+      // Set or unset an attribute with 'name' and 'value'
+      if (atttribute != null && value !== undefined && this.length > 0) {
         // Convert a JS object to a JSON string
-        value = JSON.stringify(value);
+        const json = JSON.stringify(value);
 
         return Utils.each(this, (element) => {
-          element.setAttribute(name, value);
+          DOM.setAttribute(element, atttribute, json);
         });
       }
 
-      if (this.length > 0) {
+      // Return value for attribute in element
+      if (atttribute && this.length > 0) {
         // Return a parsed JSON string
-        return JSON.parse(this[0].getAttribute(name));
+        return JSON.parse(this[0].getAttribute(atttribute));
       }
 
+      // No parameters; return nothing
       return null;
     }
 
     /**
-     * Method for calling a handler for each element in the Seht object.
-     * @param {Function} handler
+     * Method for calling a callback for each element in the Seht object.
+     * @param {Function} callback Function to call for each item
      * @return {Seht} The original Seht object
      */
-    each(handler) {
-      return Utils.each(this, handler);
+    each(callback) {
+      return Utils.each(this, callback);
     }
 
     /**
@@ -395,115 +458,149 @@ const seht = (function () {
      */
     empty() {
       return Utils.each(this, (element) => {
-        element.innerHTML = '';
+        const el = element;
+
+        el.innerHTML = '';
       });
     }
 
     /**
      * Method for creating a new Seht object containing
      * only the element at a specific position.
-     * @param {Number} index
-     * @return {Seht|Null} The new Seht object or null
+     * @param {Number} index Numerical value representing a position in Seht object
+     * @return {Seht|Null} A new Seht object or null
      */
     eq(index) {
-      return (new Seht(index >= 0 && index < this.length ? this[index] : null));
+      // Return Seht object with single element matching index when possible, or nothing
+      if (index != null && typeof index === 'number') {
+        return index >= 0 && index < this.length ? new Seht(this[index]) : null;
+      }
+
+      // No match; return nothing
+      return null;
     }
 
     /**
      * Method for creating a new Seht object containing only the first element.
-     * @return {Seht|Null} The new Seht object or null
+     * @return {Seht|Null} A new Seht object or null
      */
     first() {
       return this.eq(0);
     }
 
     /**
+     * Method for retrieving an element at a specific position.
+     * @param {Number} index Numerical value representing a position in Seht object
+     * @return {Element|Null} A found element or null
+     */
+    get(index) {
+      // Return single element matching index when possible, or nothing
+      if (index != null && typeof index === 'number') {
+        return index >= 0 && index < this.length ? this[index] : null;
+      }
+
+      // No match; return nothing
+      return null;
+    }
+
+    /**
      * Method for verifying if an element has a specific class name.
-     * @param {String} string
+     * @param {String} string Name of class to check for
      * @return {Boolean}
      */
-    hasClass(string) {
-      return this[0].classList.contains(string);
+    hasClass(name) {
+      // Class name is not empty, is a string, and Seht object has at least one element
+      if (name != null && typeof name === 'string' && this.length > 0) {
+        // Return value of 'contains'-call on 'classList'
+        return this[0].classList.contains(name);
+      }
+
+      // Nothing to check; return nothing
+      return null;
     }
 
     /**
      * Metho for retrieving or setting the HTML for elements.
-     * @param {String=} string
+     * @param {String=} value HTML content to insert
      * @return {Seht} The original Seht object or the first element's HTML
      */
-    html(string) {
-      if (typeof string !== 'undefined') {
-        if (string instanceof Seht) {
-          // The supplied string is actually a
-          // Seht object, so let's flatten it.
-          string = this.toString();
-        }
+    html(value) {
+      // Set HTML content with value
+      if (value != null) {
+        // Cast parameter to a string value if needed
+        const html = typeof value === 'string' ? value : `${value}`;
 
         return Utils.each(this, (element) => {
-          element.innerHTML = string;
+          const el = element;
+
+          el.innerHTML = html;
         });
       }
 
+      // Return HTML content of first element if possible
       if (this.length > 0) {
         return this[0].innerHTML;
       }
 
+      // No value to set or retrieve; return nothing
       return null;
     }
 
     /**
      * Method for creating a new Seht object containing only the last element.
-     * @return {Seht|Null} The new Seht object or null
+     * @return {Seht|Null} A new Seht object or null
      */
     last() {
-      return this.eq(this.length);
+      return this.eq(this.length - 1);
     }
 
     /**
      * Method for creating a new Seht object based on
-     * results from handlers called on old elements.
-     * @param {Function} handler
-     * @return {Seht} The new Seht object
+     * results from callbacks called on old elements.
+     * @param {Function} callback Function to call for each item
+     * @return {Seht} A new Seht object
      */
-    map(handler) {
-      return (new Seht(Utils.map(this, handler)));
+    map(callback) {
+      return new Seht(Utils.map(this, callback));
     }
 
     /**
-     * Method for removing an event handler from elements.
-     * @param {String} type
-     * @param {Function} handler
+     * Method for removing an event callback from elements.
+     * @param {String} type Name of event type
+     * @param {Function} callback Function to call for event
+     * @param {Boolean=} capture True or false; must match value of previous 'on'-call
      * @return {Seht} The original Seht object
      */
-    off(type, handler) {
+    off(type, callback, capture) {
       return Utils.each(this, (element) => {
-        element.removeEventListener(type, handler);
+        element.removeEventListener(type, callback, capture || false);
       });
     }
 
     /**
-     * Method for adding an event handler to elements.
-     * @param {String} type
-     * @param {Function} handler
+     * Method for adding an event callback to elements.
+     * @param {String} type Name of event type
+     * @param {Function} callback Function to call for event
+     * @param {Boolean=} capture True or false to capture this event callback before others
      * @return {Seht} The original Seht object
      */
-    on(type, handler) {
+    on(type, callback, capture) {
       return Utils.each(this, (element) => {
-        element.addEventListener(type, handler);
+        element.addEventListener(type, callback, capture || false);
       });
     }
 
     /**
      * Method for creating a new Seht object based on elements' parents.
-     * @return {Seht} The new Seht object
+     * @return {Seht} A new Seht object
      */
     parent() {
-      return (new Seht(Utils.map(this, element => element.parentNode)));
+      return this.map(element => element.parentNode);
     }
 
     /**
      * Method for prepending HTML content to elements.
-     * @param {String} html
+     * @param {String} html HTML content to insert
      * @return {Seht} The original Seht object
      */
     prepend(html) {
@@ -512,31 +609,30 @@ const seht = (function () {
 
     /**
      * Method for prepending a Seht object to a selector.
-     * @param {*} selector
-     * @return {Seht} The new Seht object
+     * @param {*} selector Selector for elements to prepend to
+     * @param {*=} context Context of elements
+     * @return {Seht} A new Seht object
      */
-    prependTo(selector) {
-      return (new Seht(selector)).prepend(this);
+    prependTo(selector, context) {
+      return (new Seht(selector, context)).prepend(this);
     }
 
     /**
      * Method for removing elements from its context;
      * returns their parents in a new Seht object.
-     * @return {Seht} The new Seht object
+     * @return {Seht} A new Seht object
      */
     remove() {
-      const parents = this.parent();
-
-      Utils.each(this, (element) => {
-        element.parentNode.removeChild(element);
+      return this.each((element) => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
       });
-
-      return parents;
     }
 
     /**
      * Method for removing class names from elements.
-     * @param {...String} classNames
+     * @param {...String} classNames Comma separated strings representing class names
      * @return {Seht} The original Seht object
      */
     removeClass(...classNames) {
@@ -549,20 +645,28 @@ const seht = (function () {
 
     /**
      * Method for retrieving or setting the text for elements.
-     * @param {String=} string
+     * @param {String=} value String to insert
      * @return {Seht|String} The original Seht object or the first element's text content
      */
-    text(string) {
-      if (typeof string !== 'undefined') {
+    text(value) {
+      // Set text content with value
+      if (value != null) {
+        // Cast parameter to a string value if needed
+        const text = typeof value === 'string' ? value : `${value}`;
+
         return Utils.each(this, (element) => {
-          element.textContent = string;
+          const el = element;
+
+          el.textContent = text;
         });
       }
 
+      // Return text content of first element if possible
       if (this.length > 0) {
         return this[0].textContent;
       }
 
+      // No value to set or retrieve; return nothing
       return null;
     }
 
@@ -576,7 +680,7 @@ const seht = (function () {
 
     /**
      * Method for toggling class names for elements.
-     * @param {...String} classNames
+     * @param {...String} classNames Comma separated strings representing class names
      * @return {Seht} The original Seht object
      */
     toggleClass(...classNames) {
@@ -593,19 +697,13 @@ const seht = (function () {
      * @return {String} The combined HTML content
      */
     toString() {
-      let string = '';
-
-      Utils.each(this, (element) => {
-        string += element.outerHTML;
-      });
-
-      return string;
+      return Utils.map(this, element => element.outerHTML).join();
     }
 
     /**
      * Method for triggering events for
      * each element in the Seht object.
-     * @param {...String} events
+     * @param {...String} events Comma separated strings representing event types
      * @return {Seht} The original Seht object
      */
     trigger(...events) {
@@ -616,28 +714,36 @@ const seht = (function () {
 
     /**
      * Method for retrieving or setting the value for an element.
-     * @param {String=} value
+     * @param {String=} value Value to insert
      * @return {Seht} The original Seht object or the first element's value
      */
     value(value) {
-      if (typeof value !== 'undefined') {
+      // Set value property with value
+      if (value != null) {
+        // Cast parameter to a string value if needed
+        const val = typeof value === 'string' ? value : `${value}`;
+
         return Utils.each(this, (element) => {
-          element.value = value;
+          const el = element;
+
+          el.value = val;
         });
       }
 
+      // Return value of first element if possible
       if (this.length > 0) {
         return this[0].value;
       }
 
+      // No value to set or retrieve; return nothing
       return null;
     }
   }
 
   /**
    * Method for creating a new instance of Seht.
-   * @param {*=} selector
-   * @param {*=} context
+   * @param {*=} selector Selector for elements
+   * @param {*=} context Context of elements
    * @returns {Seht} A new Seht object
    */
   const seht = (selector, context) => {
@@ -648,6 +754,10 @@ const seht = (function () {
     return new Seht(selector, context);
   };
 
+  // Expose the prototype for extensions and custom methods
+  seht.fn = Seht.prototype;
+  seht.prototype = Seht.prototype;
+
   // Expose useful event and utility methods for outside use
   seht.each = Utils.each;
   seht.map = Utils.map;
@@ -655,7 +765,11 @@ const seht = (function () {
   seht.toArray = Utils.toArray;
   seht.unique = Utils.unique;
 
-  if (typeof win.$ === 'undefined') {
+  // Export Seht's class, both for advanced usage and testing
+  win.Seht = Seht;
+
+  // Export a jQuery-like method when possible
+  if (win.$ == null) {
     win.$ = seht;
   }
 

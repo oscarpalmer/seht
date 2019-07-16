@@ -41,10 +41,10 @@
     "babel": "yarn babel:build && yarn babel:minify",
     "babel:build": "babel dist/seht.js --out-file dist/seht.babel.js",
     "babel:minify": "uglifyjs dist/seht.babel.js -o dist/seht.babel.js -c -m --comments",
-    "build": "yarn rollup && ",
+    "build": "yarn rollup && yarn minify && yarn babel",
     "minify": "terser dist/seht.js -o dist/seht.min.js -c -m --keep-classnames --comments",
     "rollup": "rollup -c",
     "watch": "rollup -c --watch.chokidar --watch.clearScreen"
   },
-  "version": "0.12.1"
+  "version": "0.13.0"
 }
