@@ -1,6 +1,6 @@
-# Seht
+# &#x1F916;&nbsp;&nbsp;Seht
 
-[![npm version](https://badge.fury.io/js/seht.svg)](//badge.fury.io/js/seht)
+[![npm version](https://badge.fury.io/js/seht.svg)](https://badge.fury.io/js/seht)
 
 A JavaScript library, and a decent replacement – hopefully – for jQuery, et alia.
 
