@@ -49,6 +49,7 @@
 		"watch": "esbuild ./src/index.ts --bundle --sourcemap --watch --format=esm --outfile=dist/seht.esm.js --target=esnext"
   },
 	"type": "module",
+	"types": "src/index.d.ts",
 	"unpkg": "dist/seht.iife.js",
-  "version": "0.14.0"
+  "version": "0.15.0"
 }
