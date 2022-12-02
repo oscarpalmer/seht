@@ -1,8 +1,16 @@
-import {find, Selector} from './dom';
+import {Attributes, Data, find, Selector} from './dom';
 import {Events} from './events';
 
 export class Seht {
 	readonly elements: HTMLElement[];
+
+	get attributes(): Attributes {
+		return new Attributes(this);
+	}
+
+	get data(): Data {
+		return new Data(this);
+	}
 
 	get events(): Events {
 		return new Events(this);

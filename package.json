@@ -36,7 +36,7 @@
   "license": "MIT",
   "main": "dist/seht.cjs.js",
 	"module": "dist/seht.esm.js",
-  "name": "seht",
+  "name": "@oscarpalmer/seht",
   "repository": {
     "type": "git",
     "url":  "https://github.com/oscarpalmer/seht.git"
@@ -51,5 +51,5 @@
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/seht.iife.js",
-  "version": "0.16.0"
+  "version": "0.17.0"
 }

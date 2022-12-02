@@ -1,23 +1,5 @@
 import {Seht} from './index';
 
-function dispatchEvents(elements: HTMLElement[], events: string | DispatchObject | Array<string | DispatchObject>) {
-	const extended = getExtendedDispatches(events);
-
-	for (const event of extended) {
-		for (const element of elements) {
-			if (typeof event === 'string') {
-				element.dispatchEvent(new Event(event));
-			} else {
-				element.dispatchEvent(new CustomEvent(event.name, {
-					detail: event.data,
-				}));
-			}
-		}
-	}
-
-	return null;
-}
-
 export type DispatchObject = {
 	data: any;
 	name: string;
@@ -34,20 +16,22 @@ type ExtendedEventObject = {
 
 export type EventObjects = Record<string, EventObject>;
 
-export class Events {
-	constructor(private readonly seht: Seht) {}
+function dispatchEvents(elements: HTMLElement[], events: string | DispatchObject | Array<string | DispatchObject>) {
+	const extended = getExtendedDispatches(events);
 
-	add(events: EventObjects): Seht {
-		return setEvents(this.seht.elements, events, true) ?? this.seht;
+	for (const event of extended) {
+		for (const element of elements) {
+			if (typeof event === 'string') {
+				element.dispatchEvent(new Event(event));
+			} else {
+				element.dispatchEvent(new CustomEvent(event.name, {
+					detail: event.data,
+				}));
+			}
+		}
 	}
 
-	dispatch(events: string | DispatchObject | Array<string | DispatchObject>): Seht {
-		return dispatchEvents(this.seht.elements, events) ?? this.seht;
-	}
-
-	remove(events: EventObjects): Seht {
-		return setEvents(this.seht.elements, events, false) ?? this.seht;
-	}
+	return null;
 }
 
 function getExtendedDispatches(events: string | DispatchObject | Array<string | DispatchObject>) {
@@ -83,7 +67,7 @@ function getExtendedDispatches(events: string | DispatchObject | Array<string | 
 function getExtendedEvents(events: EventObjects): ExtendedEventObject[] {
 	const extended: ExtendedEventObject[] = [];
 
-	if (typeof events !== 'object') {
+	if (typeof events !== 'object' || Array.isArray(events)) {
 		return extended;
 	}
 
@@ -112,4 +96,20 @@ function setEvents(elements: HTMLElement[], events: EventObjects, add: boolean) 
 	}
 
 	return null;
+}
+
+export class Events {
+	constructor(private readonly seht: Seht) {}
+
+	add(events: EventObjects): Seht {
+		return setEvents(this.seht.elements, events, true) ?? this.seht;
+	}
+
+	dispatch(events: string | DispatchObject | Array<string | DispatchObject>): Seht {
+		return dispatchEvents(this.seht.elements, events) ?? this.seht;
+	}
+
+	remove(events: EventObjects): Seht {
+		return setEvents(this.seht.elements, events, false) ?? this.seht;
+	}
 }
