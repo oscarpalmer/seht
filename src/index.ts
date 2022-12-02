@@ -1,7 +1,12 @@
 import {find, Selector} from './dom';
+import {Events} from './events';
 
 export class Seht {
-	private readonly elements: HTMLElement[];
+	readonly elements: HTMLElement[];
+
+	get events(): Events {
+		return new Events(this);
+	}
 
 	constructor(selector: Selector, context?: Selector) {
 		this.elements = find(selector, context);

@@ -51,5 +51,5 @@
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/seht.iife.js",
-  "version": "0.15.0"
+  "version": "0.16.0"
 }
