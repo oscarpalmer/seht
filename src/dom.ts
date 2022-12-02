@@ -29,6 +29,10 @@ function getValidAttributes(attributes: Record<string, any>, data: boolean): Att
 	}
 
 	for (const name in attributes) {
+		if (name.length < 1) {
+			continue;
+		}
+
 		const attributeName = data
 			? getDataAttributeName(name)
 			: name;
@@ -46,6 +50,12 @@ function getValidAttributes(attributes: Record<string, any>, data: boolean): Att
 	}
 
 	return valid;
+}
+
+function getValidClassNames(names: string[]): string[] {
+	return Array.isArray(names)
+		? names.filter(name => typeof name === 'string' && name.length > 0)
+		: [];
 }
 
 export function find(selector: Selector, context?: Selector): HTMLElement[] {
@@ -111,6 +121,22 @@ function setAttributes(elements: HTMLElement[], attributes: Record<string, any>,
 		return null;
 }
 
+function setClassNames(type: 'add' | 'remove' | 'toggle', elements: HTMLElement[], names: string[]) {
+	const valid = getValidClassNames(names);
+
+	for (const element of elements) {
+		if (type === 'toggle') {
+			for (const name of names) {
+				element.classList.toggle(name);
+			}
+		} else {
+			element.classList[type](...valid);
+		}
+	}
+
+	return null;
+}
+
 function uniqueFilter<T>(value: T, index: number, array: T[]): boolean {
 	return array.indexOf(value) === index;
 }
@@ -124,6 +150,26 @@ export class Attributes {
 
 	set(attributes: Record<string, any>): Seht {
 		return setAttributes(this.seht.elements, attributes, false) ?? this.seht;
+	}
+}
+
+export class Classes {
+	constructor(private readonly seht: Seht) {}
+
+	add(...names: string[]): Seht {
+		return setClassNames('add', this.seht.elements, names) ?? this.seht;
+	}
+
+	has(name: string): boolean {
+		return this.seht.elements[0]?.classList.contains(name) ?? false;
+	}
+
+	remove(...names: string[]): Seht {
+		return setClassNames('remove', this.seht.elements, names) ?? this.seht;
+	}
+
+	toggle(...names: string[]): Seht {
+		return setClassNames('toggle', this.seht.elements, names) ?? this.seht;
 	}
 }
 

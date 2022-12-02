@@ -1,4 +1,4 @@
-import {Attributes, Data, find, Selector} from './dom';
+import {Attributes, Classes, Data, find, Selector} from './dom';
 import {Events} from './events';
 
 export class Seht {
@@ -6,6 +6,10 @@ export class Seht {
 
 	get attributes(): Attributes {
 		return new Attributes(this);
+	}
+
+	get classes(): Classes {
+		return new Classes(this);
 	}
 
 	get data(): Data {
